@@ -1,0 +1,64 @@
+#开发和测试环境使用的位置文件
+spring:
+  http:
+    multipart:
+      max-file-size=20Mb
+      max-request-size=20Mb
+  #数据库配置
+  datasource:
+    url: jdbc:mysql://192.168.100.66:3306/chamberlaindb?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    username: test
+    password: test
+    driver-class-name: com.mysql.jdbc.Driver
+
+  cache:
+    type: ehcache
+    ehcache:
+      config: classpath:/ehcache.xml
+
+  #redis
+  redis:
+    host: 192.168.100.66
+    port: 6379
+    password: root
+    jedis:
+      pool:
+        max-active: 66
+
+# switch and default data
+examInfo.cache.switch: true
+question.type.sort: "[{\"typeId\":1,\"typeName\":\"单选题\"},{\"typeId\":2,\"typeName\":\"多选题\"},{\"typeId\":3,\"typeName\":\"判断题\"},{\"typeId\":4,\"typeName\":\"填空题\"},{\"typeId\":5,\"typeName\":\"问答题\"}]"
+
+# task thread pool config
+task:
+  core:
+    pool:
+      size: 10
+  max:
+    pool:
+      size: 50
+  queue:
+    capacity: 10
+
+
+# 日志目录
+#logging:
+#  path: logs/
+#  file: ${logging.path}springboot
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+#logging:
+#  config: classpath:log4j2.xml
+
+# Configuration
+upload:
+  region: oss-cn-shenzhen
+  accessKeyId: LTAI4GHc1QoHeAXpXPPL3b9S
+  accessKeySecret: sOnOq3PXiXegdJXUdOaMyaQ6t2xHZO
+  bucket: cbsystem
+
+
+aes:
+  key: aaDJL2d9DfhLZO0z
+  iv: 412ADDSSFA342442
