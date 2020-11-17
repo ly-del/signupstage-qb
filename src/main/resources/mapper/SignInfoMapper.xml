@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cb.signupstage.mapper.SignInfoMapper">
+
+
+    <select id="selectPageList" resultType="com.cb.signupstage.vo.SignInfoVo">
+        SELECT
+	info.id,
+info.`name`,
+info.`describe`,
+info.max_total,
+info.cost,
+info.start_time,
+info.end_time,info.create_time,
+IF(g.group_name IS NULL,"未分组",g.group_name) as groupName,
+COUNT(bind.id) AS count,
+	SUM(
+		IF (
+			bind.`status` = 1,
+			bind.cost,
+			0
+		)
+	) AS costTotal
+FROM
+	sign_info info
+LEFT JOIN user_sign_info bind ON bind.sign_id = info.id
+LEFT JOIN user_group g on g.id = info.group_id
+GROUP BY
+	info.id
+    </select>
+
+    <!--查询报名人数和总收益-->
+    <select id="selectCountAndCost" resultType="java.util.Map">
+select SUM(a.count1)as week,SUM(a.count2) as month ,SUM(a.cost) as cost from
+(
+SELECT
+	COUNT(bind.user_id) AS count1, 0 as count2 ,0 as cost
+FROM
+	user_sign_info bind
+WHERE
+	YEARWEEK(
+		date_format(create_time, '%Y-%m-%d'),
+		1
+	) = YEARWEEK(now(), 1)
+union all
+SELECT  0 as count1,
+	COUNT(bind.user_id) AS count2 ,0 as cost
+FROM
+	user_sign_info bind
+WHERE
+	DATE_FORMAT(create_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+union ALL
+select 0 as count1,0 as count2, bind.cost  from user_sign_info bind
+
+)a
+    </select>
+    <!--查询本周的报名人数-->
+    <select id="selectThisWeekCount" resultType="java.lang.Integer">
+SELECT
+	COUNT(bind.user_id) AS count
+FROM
+	user_sign_info bind
+WHERE
+	YEARWEEK(
+		date_format(create_time, '%Y-%m-%d'),
+		1
+	) = YEARWEEK(now(), 1)
+	</select>
+    <!--查询本月的报名人数-->
+    <select id="selectThisMonthCount" resultType="java.lang.Integer">
+SELECT
+	COUNT(bind.user_id) AS count
+FROM
+	user_sign_info bind
+WHERE
+	DATE_FORMAT(create_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+	</select>
+</mapper>

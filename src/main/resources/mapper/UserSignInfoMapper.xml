@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cb.signupstage.mapper.UserSignInfoMapper">
+    <!--判断该手机号是否已报名-->
+    <select id="getExist" resultType="com.cb.signupstage.entity.UserSignInfo">
+select u.id,u.userName
+
+from user_sign_info bind
+LEFT JOIN user_info u on u.id = bind.user_id
+LEFT JOIN sign_info info on info.id = bind.sign_id
+where u.mobile = #{entity.mobile} and bind.sign_id = #{entity.SignInfoId}
+  </select>
+</mapper>
