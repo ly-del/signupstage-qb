@@ -120,14 +120,10 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
     //  int month =  signInfoMapper.selectThisMonthCount();
       //查询收益
 
-              Map<String,Object> map = signInfoMapper.selectCountAndCost();
+        SignInfoPageDTO dto = signInfoMapper.selectCountAndCost();
         PagedResult<SignInfoVo> signInfoVoPagedResult = new PagedResult<>(signInfoList);
-        SignInfoPageDTO signInfoPageDTO = new SignInfoPageDTO();
-        signInfoPageDTO.setMonth((Integer) map.get("month"));
-        signInfoPageDTO.setWeek((Integer) map.get("week"));
-        signInfoPageDTO.setCost((BigDecimal) map.get("cost"));
-        signInfoPageDTO.setPagedResult(signInfoVoPagedResult);
-        return signInfoPageDTO;
+        dto.setPagedResult(signInfoVoPagedResult);
+        return dto;
 
     }
 

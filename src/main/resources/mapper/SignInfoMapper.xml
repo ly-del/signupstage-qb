@@ -30,7 +30,7 @@ GROUP BY
     </select>
 
     <!--查询报名人数和总收益-->
-    <select id="selectCountAndCost" resultType="java.util.Map">
+    <select id="selectCountAndCost" resultType="com.cb.signupstage.dto.SignInfoPageDTO">
 select SUM(a.count1)as week,SUM(a.count2) as month ,SUM(a.cost) as cost from
 (
 SELECT
