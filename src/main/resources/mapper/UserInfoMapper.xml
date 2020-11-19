@@ -31,8 +31,20 @@
     LEFT JOIN user_group g on g.id = gb.group_id
 
     where g.`status` = 1 and info.`status` = 1
-    <if test="entity.name != null and entity.name != ''">
-      and name = #{entity.name,jdbcType=VARCHAR}
+    <if test="entity.sex != null and entity.sex != ''">
+      and info.sex = #{entity.sex}
+    </if>
+    <if test="entity.userName != null and entity.userName != ''">
+      and info.userName like concat ('%',#{entity.userName},'%')
+    </if>
+    <if test="entity.mobile != null and entity.mobile != ''">
+      and info.mobile like  concat (#{entity.mobile},'%')
+    </if>
+    <if test="entity.positionName != null and entity.positionName != ''">
+      and info.positionName = #{entity.positionName}
+    </if>
+    <if test="entity.idCard != null and entity.idCard != ''">
+      and info.idCard =like    concat( #{entity.idCard} , '%')
     </if>
   </select>
 </mapper>

@@ -37,7 +37,7 @@ public class UserSignBindVo {
     /**
      * 头像
      */
-    private String avatar;
+    private String faceUrl;
 
     /**
      * 邮箱

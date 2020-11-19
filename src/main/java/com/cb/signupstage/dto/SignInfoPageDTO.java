@@ -1,6 +1,7 @@
 package com.cb.signupstage.dto;
 
 import com.cb.signupstage.vo.SignInfoVo;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,10 +14,13 @@ import java.math.BigDecimal;
 @Data
 public class SignInfoPageDTO {
 
+    @ApiModelProperty(value = "本周报名人数")
     private Integer week;
 
+    @ApiModelProperty(value = "本月报名人数")
     private Integer month;
 
+    @ApiModelProperty(value = "费用")
     private BigDecimal cost;
 
     PagedResult<SignInfoVo> pagedResult;

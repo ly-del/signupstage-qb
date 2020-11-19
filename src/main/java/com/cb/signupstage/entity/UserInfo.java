@@ -12,9 +12,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.util.Date;
 
-@Getter
-@Setter
-@ToString
 @Data
 @TableName("user_info")
 public class UserInfo implements Serializable {
@@ -25,8 +22,8 @@ public class UserInfo implements Serializable {
     /**
      * 分组id
      */
-    @TableField("user_group_id")
-    private Long userGroupId;
+    @TableField("face_url")
+    private String faceUrl;
 
     /**
      * 登陆账号

@@ -168,7 +168,7 @@
             <version>3.4.1</version>
         </dependency>
 
-        <!--swagger接口依赖-->
+       <!-- swagger接口依赖-->
         <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
         <dependency>
             <groupId>io.springfox</groupId>
@@ -181,7 +181,17 @@
             <artifactId>springfox-swagger-ui</artifactId>
             <version>2.9.2</version>
         </dependency>
+
+        <!--二维码依赖-->
+        <dependency>
+        <groupId>com.google.zxing</groupId>
+        <artifactId>core</artifactId>
+        <version>3.3.0</version>
+        </dependency>
+
     </dependencies>
+
+
 
 
     <build>

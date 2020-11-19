@@ -11,11 +11,13 @@ import com.cb.signupstage.entity.SignInfo;
 import com.cb.signupstage.entity.SignInfoForm;
 import com.cb.signupstage.mapper.SignInfoFormMapper;
 import com.cb.signupstage.mapper.SignInfoMapper;
+import com.cb.signupstage.mapper.UserSignInfoMapper;
 import com.cb.signupstage.service.SignInfoFormService;
 import com.cb.signupstage.service.SignInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cb.signupstage.utils.CopyUtils;
 import com.cb.signupstage.vo.SignInfoVo;
+import com.cb.signupstage.vo.UserSignSearchVo;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.ObjectUtils;
@@ -45,6 +47,9 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
 
     @Autowired
     private SignInfoFormMapper signInfoFormMapper;
+
+    @Autowired
+    private UserSignInfoMapper userSignInfoMapper;
 
 
     @Override
@@ -126,6 +131,23 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
         return dto;
 
     }
+
+
+
+
+
+
+
+    @Override
+    public List<UserSignSearchVo> queryUserSignPage(Page<SignInfo> page, UserSignSearchVo vo, Long accountId) {
+        PageHelper.startPage(page.getPageNum(), page.getPageSize());
+        //先查询所有的  报名基础性信息
+
+        List<UserSignSearchVo> userSignList = userSignInfoMapper.selectPageList(vo,accountId);
+
+        return userSignList;
+    }
+
 
 
 }

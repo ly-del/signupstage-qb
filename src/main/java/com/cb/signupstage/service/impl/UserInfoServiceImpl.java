@@ -213,6 +213,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setMobile(vo.getMobile());
         userInfo.setUsername(vo.getUsername());
         userInfo.setStatus(SignDec.STATUS_UN_DELETED);
+
         QueryWrapper<UserInfo> wrapper = new QueryWrapper<>(userInfo);
         List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
        Long userId= null;

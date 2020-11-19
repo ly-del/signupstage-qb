@@ -107,7 +107,6 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         List<UserGroupBind> userGroupBinds = userGroupBindMapper.selectList(wrapper);
         if (userGroupBinds.size()==0){
             //删除
-            //TODO
             log.info("======没有用户绑定在该组");
             //删除
             List<UserGroup> groupList =new ArrayList<>();
@@ -121,8 +120,7 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
             return failMsg;
         }
 
-        //TODO
-        log.info("======");
+        log.info("======有用户绑定在该组,不能删除");
         failMsg="有用户绑定在该组,不能删除";
         return failMsg;
     }
