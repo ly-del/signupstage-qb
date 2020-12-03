@@ -6,9 +6,9 @@ spring:
       max-request-size=20Mb
   #数据库配置
   datasource:
-    url: jdbc:mysql://192.168.100.66:3306/chamberlaindb?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
-    username: test
-    password: test
+    url: jdbc:mysql://localhost:3306/chamberlaindb?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
     driver-class-name: com.mysql.jdbc.Driver
 
   cache:
@@ -62,3 +62,11 @@ upload:
 aes:
   key: aaDJL2d9DfhLZO0z
   iv: 412ADDSSFA342442
+
+
+#log
+  logging:
+  level:
+  com.cb.signupstage.mapper : debug
+
+

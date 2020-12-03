@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cb.signupstage.dto.UserInfoPageDTO;
 import com.cb.signupstage.entity.UserGroup;
 import com.cb.signupstage.entity.UserInfo;
+import com.cb.signupstage.vo.UserSelectPageVo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -70,5 +71,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
      * @param accountId
      * @return
      */
-    List<UserInfoPageDTO> pageQuery(@Param("entity") Map<String,Object> map, Long accountId);
+    List<UserInfoPageDTO> pageQuery(@Param("entity")UserSelectPageVo vo, Long accountId);
+
+    UserInfoPageDTO getById(Long id);
 }

@@ -13,11 +13,11 @@ import java.util.List;
  */
 public interface StudentGroupService extends IService<UserGroup> {
 
-    String createGroup(UserGroup userGroupEntity, Long accountId);
+    String createGroup(String groupName, Long parentId, Long accountId);
 
     String updateGroup(UserGroup userGroupEntity, Long accountId);
 
-    String deleteGroup(UserGroup userGroupEntity, Long accountId);
+    String deleteGroup(Long id, Long accountId);
 
     /**
      * 查询 考生分组列表

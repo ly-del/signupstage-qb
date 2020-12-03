@@ -28,8 +28,8 @@ public class UserInfo implements Serializable {
     /**
      * 登陆账号
      */
-    @TableField("username")
-    private String username;
+    @TableField("userName")
+    private String userName;
 
     /**
      * 工号

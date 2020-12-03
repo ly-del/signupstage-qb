@@ -25,6 +25,7 @@ FROM
 	sign_info info
 LEFT JOIN user_sign_info bind ON bind.sign_id = info.id
 LEFT JOIN user_group g on g.id = info.group_id
+where info.`status` = 1
 GROUP BY
 	info.id
     </select>

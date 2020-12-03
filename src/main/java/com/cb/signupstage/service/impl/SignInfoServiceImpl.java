@@ -6,6 +6,7 @@ import com.cb.signupstage.common.ResultBean;
 import com.cb.signupstage.common.SignDec;
 import com.cb.signupstage.common.StatusCode;
 import com.cb.signupstage.dto.PagedResult;
+import com.cb.signupstage.dto.SignInfoFormDTO;
 import com.cb.signupstage.dto.SignInfoPageDTO;
 import com.cb.signupstage.entity.SignInfo;
 import com.cb.signupstage.entity.SignInfoForm;
@@ -16,7 +17,9 @@ import com.cb.signupstage.service.SignInfoFormService;
 import com.cb.signupstage.service.SignInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cb.signupstage.utils.CopyUtils;
+import com.cb.signupstage.vo.SignInfoSaveVo;
 import com.cb.signupstage.vo.SignInfoVo;
+import com.cb.signupstage.vo.UserSearchVo;
 import com.cb.signupstage.vo.UserSignSearchVo;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -25,11 +28,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -51,38 +55,63 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
     @Autowired
     private UserSignInfoMapper userSignInfoMapper;
 
+    @Autowired
+    private SignInfoFormService signInfoFormService;
+
+
+
+    //第一次 新建报名  只会触发一次
+    @Override
+    public ResultBean saveFirst(SignInfo signInfo, Long accountId) {
+        //查询在不在
+        SignInfo select = new SignInfo();
+        select.setName(signInfo.getName());
+        QueryWrapper wrapper =new QueryWrapper(select);
+        List list = signInfoMapper.selectList(wrapper);
+        if (list.size()>0){
+            return  ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).failMsg("报名标题已存在").build();
+        }
+        signInfo.setCost(SignDec.COST);
+        signInfo.setMaxTotal(SignDec.MAX_TOTAL);
+        signInfo.setAccountId(accountId);
+        signInfo.setCreateTime(LocalDateTime.now());
+        signInfo.setUpdateTime(LocalDateTime.now());
+        signInfo.setIsSkip(1);
+        signInfo.setUnstartedDec(SignDec.UNSTARTED_DEC);
+        signInfo.setCompleteDec(SignDec.COMPLETE_DEC);
+        signInfo.setSucceedDec(SignDec.SUCCEED_DEC);
+        signInfo.setFailDec(SignDec.FAIL_DEC);
+        signInfo.setShareDec(SignDec.SHARE_DEC);
+        signInfo.setIsRelease(SignDec.RELEASE_NOT_RELEASE);
+        signInfo.setStatus(SignDec.STATUS_UN_DELETED);
+        int insert = signInfoMapper.insert(signInfo);
+        if (insert < 0){
+            //失败 return
+         return   ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).failMsg(null).build();
+        }
+
+        // 第一次新建报名 自动增加两条 固定属性 记录
+        saveInfoSetting(signInfo.getId(), accountId);
+
+
+        List<SignInfoFormDTO> formList = signInfoFormService.getFormList(signInfo.getId());
+
+        List<SignInfoFormDTO> sortList = formList.stream().sorted(Comparator.comparing(SignInfoFormDTO::getSort)).collect(Collectors.toList());
+
+
+        SignInfoSaveVo signInfoSaveVo =CopyUtils.copy(signInfo,SignInfoSaveVo.class);
+        signInfoSaveVo.setFormList(sortList);
+
+
+        return ResultBean.builder().data(signInfoSaveVo).statusCode(StatusCode.SUCCESS_CODE).result(true).failMsg(null).build();
+    }
 
     @Override
-    public ResultBean saveOrCopy(SignInfoVo vo ,Long accountId) {
-
-        if (ObjectUtils.isEmpty(vo.getId())){
-            //不存在 新建 一个 报告信息
-            SignInfo signInfo = new SignInfo();
-            signInfo.setName("报名标题");
-            signInfo.setCost(SignDec.COST);
-            signInfo.setMaxTotal(SignDec.MAX_TOTAL);
-            signInfo.setAccountId(accountId);
-            signInfo.setCreateTime(LocalDateTime.now());
-            signInfo.setUpdateTime(LocalDateTime.now());
-            signInfo.setIsSkip(1);
-            signInfo.setUnstartedDec(SignDec.UNSTARTED_DEC);
-            signInfo.setCompleteDec(SignDec.COMPLETE_DEC);
-            signInfo.setSucceedDec(SignDec.SUCCEED_DEC);
-            signInfo.setFailDec(SignDec.FAIL_DEC);
-            signInfo.setShareDec(SignDec.SHARE_DEC);
-           signInfo.setRelease(SignDec.RELEASE_NOT_RELEASE);
-
-            signInfoMapper.insert(signInfo);
-
-            //保存 报名页面基础信息设置
-            saveInfoSetting(signInfo.getId(),accountId);
-
-            return ResultBean.builder().data(signInfo).statusCode(StatusCode.SUCCESS_CODE).failMsg(null).build();
-        }
+    public String saveOrCopy(Long id ,Long accountId) {
 
         //存在 就 复制 一个新的
         //先查找 已存在的报告的信息
-        SignInfo info = signInfoMapper.selectById(vo.getId());
+        SignInfo info = signInfoMapper.selectById(id);
 
         SignInfo copy = CopyUtils.copy(info, SignInfo.class);
         copy.setId(null);
@@ -91,22 +120,44 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
         copy.setUpdateTime(LocalDateTime.now());
         signInfoMapper.insert(copy);
 
-        saveInfoSetting(info.getId(),accountId);
-        return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg(null).build();
+        SignInfoForm signInfoForm = new SignInfoForm();
+        signInfoForm.setSignInfoId(id);
+        QueryWrapper<SignInfoForm> wrapper = new QueryWrapper<>(signInfoForm);
+        List<SignInfoForm> signInfoForms = signInfoFormMapper.selectList(wrapper);
+        for (SignInfoForm infoForm : signInfoForms) {
+            infoForm.setId(null);
+            infoForm.setSignInfoId(copy.getId());
+            infoForm.setAccountId(accountId);
+            infoForm.setCreateTime(LocalDateTime.now());
+        }
+        boolean b = signInfoFormService.saveBatch(signInfoForms);
+        if (!b){
+            return "复制报名失败";
+        }
+
+        return null;
     }
 
-    //设置基础报名页面 字段信息
+    //第一次新增发  设置基础报名页面 属性字段信息
     public void saveInfoSetting(Long signInfoId ,Long accountId){
 
+       List<SignInfoForm> formList = new ArrayList<>();
         SignInfoForm signInfoForm = new SignInfoForm();
         signInfoForm.setSignInfoId(signInfoId);
         signInfoForm.setAccountId(accountId);
-        signInfoForm.setCreateTime(LocalDateTime.now());
-        signInfoForm.setUpdateTime(LocalDateTime.now());
-        signInfoForm.setStatus(SignDec.STATUS_UN_DELETED);
-        signInfoForm.setName("姓名");
-        signInfoForm.setMobile("手机");
-        signInfoFormMapper.insert(signInfoForm);
+        signInfoForm.setCustomizeId(Long.valueOf(1));
+        signInfoForm.setSort(1);
+        signInfoForm.setStatus(SignDec.DELETED_NO);
+        formList.add(signInfoForm);
+
+        SignInfoForm signInfoForm2 = new SignInfoForm();
+        signInfoForm2.setSignInfoId(signInfoId);
+        signInfoForm2.setAccountId(accountId);
+        signInfoForm2.setCustomizeId(Long.valueOf(2));
+        signInfoForm2.setSort(2);
+        signInfoForm2.setStatus(SignDec.DELETED_NO);
+        formList.add(signInfoForm2);
+        signInfoFormService.saveBatch(formList);
     }
 
     @Override
@@ -139,14 +190,25 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
 
 
     @Override
-    public List<UserSignSearchVo> queryUserSignPage(Page<SignInfo> page, UserSignSearchVo vo, Long accountId) {
+    public List<UserSearchVo> queryUserSignPage(Page<SignInfo> page, UserSearchVo vo, Long accountId) {
         PageHelper.startPage(page.getPageNum(), page.getPageSize());
         //先查询所有的  报名基础性信息
 
-        List<UserSignSearchVo> userSignList = userSignInfoMapper.selectPageList(vo,accountId);
+        List<UserSearchVo> userSignList = userSignInfoMapper.selectPageList(vo,accountId);
 
         return userSignList;
     }
+
+    @Override
+    public List<UserSignSearchVo> querySignPage(Page<SignInfo> page, UserSignSearchVo vo, Long accountId) {
+        PageHelper.startPage(page.getPageNum(), page.getPageSize());
+        //先查询所有的  报名基础性信息
+
+        List<UserSignSearchVo> userSignList = userSignInfoMapper.selectExportPageList(vo,accountId);
+
+        return userSignList;
+    }
+
 
 
 

@@ -14,10 +14,13 @@ import com.cb.signupstage.mapper.*;
 import com.cb.signupstage.service.SignInfoFormService;
 import com.cb.signupstage.service.UserInfoService;
 import com.cb.signupstage.utils.CopyUtils;
+import com.cb.signupstage.vo.UserSelectPageVo;
 import com.cb.signupstage.vo.UserSignBindVo;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,34 +58,37 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     /**
      * 保存 修改 自定义类信息
-     * @param customize
+     * @param
      * @return
      */
-    public ResultBean saveCustomize(String id, String customize) {
+    public ResultBean saveCustomize(Map<String,String> map,Long accountId) {
+        String customize = map.get("customize");
+
         UserCustomize userCustomize = new UserCustomize();
-        if (ObjectUtils.isEmpty(id)) {
+        if (ObjectUtils.isEmpty(map.get("id"))) {
             //先查询 如果已存在 则新建失败
             userCustomize.setName(customize);
             List customizeList = getCustomizeList(userCustomize);
 
             if (customizeList.size()>0) {
                 //存在 则创建失败
-                return ResultBean.builder().data(customize).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.CREATE_EXIST_DATA).build();
+                return ResultBean.builder().result(false).data(customize).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.CREATE_EXIST_DATA).build();
             }
-            userCustomize.setType(1);
+            userCustomize.setType(2);
             userCustomize.setStatus(1);
+            userCustomize.setAccountId(accountId);
             userCustomize.setCreateTime(new Date());
             userCustomize.setUpdateTime(new Date());
             userCustomizeMapper.insert(userCustomize);
-               return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg("保存成功").build();
+               return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("保存成功").build();
         }
 
         //修改
-        userCustomize.setId(Long.valueOf(id));
+        userCustomize.setId(Long.valueOf(map.get("id")));
         userCustomize.setName(customize);
         userCustomize.setUpdateTime(new Date());
          userCustomizeMapper.updateByPrimaryKeySelective(userCustomize);
-         return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg("修改成功成功").build();
+         return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("修改成功成功").build();
 
     }
 
@@ -98,9 +104,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     /**
      * 删除 自定义信息 列表
      */
-    public int deleteUserCustomize(Map<String, String> map) {
+    public int deleteUserCustomize(Long id) {
         UserCustomize userCustomize = new UserCustomize();
-        userCustomize.setId(Long.valueOf(map.get("id")));
+        userCustomize.setId(id);
         userCustomize.setStatus(2);
         userCustomize.setUpdateTime(new Date());
         return userCustomizeMapper.updateByPrimaryKeySelective(userCustomize);
@@ -111,7 +117,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtils.isEmpty(userInfoDTO.getMobile()) || ObjectUtils.isEmpty(userInfoDTO.getUsername()) ||
                 ObjectUtils.isEmpty(userInfoDTO.getGroupId())
         ) {
-            return ResultBean.builder().statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("手机号、姓名、分组不能为空").build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("手机号、姓名、分组不能为空").build();
         }
 
         if (ObjectUtils.isEmpty(userInfoDTO.getId())) {
@@ -122,7 +128,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             select.setMobile(userInfoDTO.getMobile());
             List<UserInfo> userList = userInfoMapper.selectBySelect(select);
            if (userList.size()>0){
-               return ResultBean.builder().statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("该手机号已注册").build();
+               return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("该手机号已注册").build();
            }
             UserInfo userInfo = new UserInfo();
 
@@ -143,34 +149,38 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //添加用户分组关系表数据
             userGroupBindMapper.insert(userGroupBind);
 
-            return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg("保存成功").build();
+            return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("保存成功").build();
         }
 
         //修改
 
         //判断手机号是否重复
+
         UserInfo select = new UserInfo();
         select.setMobile(userInfoDTO.getMobile());
-        List<UserInfo> userList = userInfoMapper.selectBySelect(select);
+        QueryWrapper<UserInfo> wrapper = new QueryWrapper<>(select);
+        List<UserInfo> userList = userInfoMapper.selectList(wrapper);
+       // List<UserInfo> userList = userInfoMapper.selectBySelect(select);
        if (!userInfoDTO.getId().equals(userList.get(0).getId())){
            //手机号已被注册
-           return ResultBean.builder().statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("该手机号已注册").build();
+           return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("该手机号已注册").build();
 
        }
 
         UserInfo copy = CopyUtils.copy(userInfoDTO, UserInfo.class);
+
         copy.setUpdatetime(new Date());
-        int i = userInfoMapper.updateByPrimaryKeySelective(copy);
+        int i = userInfoMapper.updateById(copy);
 
         if (i==0){
-            return ResultBean.builder().statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
         }
 
         UserGroupBind userGroupBind = new UserGroupBind();
         userGroupBind.setUserId(copy.getId());
         userGroupBind.setGroupId(userInfoDTO.getGroupId());
         userGroupBindMapper.updateById(userGroupBind);
-        return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg("修改成功").build();
+        return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("修改成功").build();
     }
 
     /**
@@ -182,18 +192,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setStatus(0);
         int i = userInfoMapper.updateByPrimaryKeySelective(userInfo);
         if (i==0){
-            return ResultBean.builder().statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
         }
-        return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg("删除成功").build();
+        return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("删除成功").build();
     }
 
 
 
 
-    public PagedResult<UserInfoPageDTO> pageQuery(Page<UserInfo> page, Map<String, Object> map,Long accounId) {
+    public PagedResult<UserInfoPageDTO> pageQuery(Page<UserInfo> page, UserSelectPageVo vo, Long accounId) {
         PageHelper.startPage(page.getPageNum(), page.getPageSize());
         //查询列表
-        List<UserInfoPageDTO> userInfos = userInfoMapper.pageQuery(map, accounId);
+        List<UserInfoPageDTO> userInfos = userInfoMapper.pageQuery(vo, accounId);
 
         return  new PagedResult<>(userInfos);
     }
@@ -211,8 +221,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 存在就不创建
         UserInfo userInfo = new UserInfo();
         userInfo.setMobile(vo.getMobile());
-        userInfo.setUsername(vo.getUsername());
+        userInfo.setUserName(vo.getUserName());
         userInfo.setStatus(SignDec.STATUS_UN_DELETED);
+        if (!ObjectUtils.isEmpty(vo.getCustomInformation())){
+            String customInformation = String.valueOf(vo.getCustomInformation());
+            userInfo.setCustomInformation(customInformation);
+        }
 
         QueryWrapper<UserInfo> wrapper = new QueryWrapper<>(userInfo);
         List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
@@ -253,9 +267,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userGroupBind.setStatus(SignDec.STATUS_UN_DELETED);
         userGroupBind.setAccountId(accountId);
         userGroupBindMapper.insert(userGroupBind);
-        return  ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).build();
+        return  ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).build();
 
 
 
+    }
+
+    @Override
+    public UserInfoPageDTO getUserById(Long id) {
+        return userInfoMapper.getById(id);
     }
 }

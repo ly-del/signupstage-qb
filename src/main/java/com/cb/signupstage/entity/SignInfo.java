@@ -1,5 +1,6 @@
 package com.cb.signupstage.entity;
 
+import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -98,8 +99,8 @@ public class SignInfo implements Serializable {
      * 发布状态 1已发布 2未发布
      */
     @ApiModelProperty(value = "发布状态 1已发布 2未发布")
-    @TableField("release")
-    private Integer release;
+    @TableField("is_release")
+    private Integer isRelease;
 
     /**
      * 状态(预留)
@@ -143,6 +144,22 @@ public class SignInfo implements Serializable {
     @TableField("is_skip")
     private Integer isSkip;
 
+    @ApiModelProperty(value = "跳转页面")
+    @TableField("skip_html")
+    private Integer skipHtml;
+
+    @ApiModelProperty(value = "跳转页面")
+    @TableField("button_name")
+    private String buttonName;
+
+    @ApiModelProperty(value = "试卷id")
+    @TableField("exam_id")
+    private Long examId;
+
+    @ApiModelProperty(value = "跳转页面")
+    @TableField("skip_url")
+    private String skipUrl;
+
     /**
      * 是否分享
      */
@@ -170,6 +187,10 @@ public class SignInfo implements Serializable {
     @ApiModelProperty(value = "报名链接")
     @TableField("url")
     private String url;
+
+    @ApiModelProperty(value = "背景图片url")
+    @TableField("image")
+    private String image;
 
     @TableField("create_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")

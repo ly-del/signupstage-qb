@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,9 +20,7 @@ import java.io.Serializable;
  * @author ly
  * @since 2020-11-16
  */
-@Setter
-@Getter
-@ToString
+@Data
 @TableName("sign_info_form")
 public class SignInfoForm implements Serializable {
 
@@ -37,19 +36,18 @@ public class SignInfoForm implements Serializable {
     private Long accountId;
 
     /**
-     * 手机
+     * 自定义字段id
      */
-    @TableField("mobile")
-    private String mobile;
-
-    @TableField("name")
-    private String name;
+    @TableField("customize_id")
+    private Long customizeId;
 
     /**
-     * 自定义字段
+     * 排序
      */
-    @TableField("custom_information")
-    private String customInformation;
+    @TableField("sort")
+    private Integer sort;
+
+
 
     /**
      * 报名id
@@ -57,8 +55,15 @@ public class SignInfoForm implements Serializable {
     @TableField("sign_info_id")
     private Long signInfoId;
 
+
     /**
-     * 状态(预留)
+     * 提示信息
+     */
+    @TableField("information")
+    private String information;
+
+    /**
+     * 状态
      */
     @TableField("status")
     private Integer status;

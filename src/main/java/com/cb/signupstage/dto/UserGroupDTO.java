@@ -1,6 +1,7 @@
 package com.cb.signupstage.dto;
 
 import com.cb.signupstage.entity.UserGroup;
+import com.cb.signupstage.vo.UserGroupTitleVo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,10 +16,10 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class UserGroupDTO  extends UserGroup {
+public class UserGroupDTO  extends UserGroupTitleVo {
 
 
 
-    private List<UserGroup> children;
+    private List<UserGroupTitleVo> children;
 
 }

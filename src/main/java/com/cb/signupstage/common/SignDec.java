@@ -31,11 +31,22 @@ public class SignDec {
 
     public final static Integer MANUAL_JUMP = 2;
 
-    public final static Integer AUTO_JUMP = 2;
+    public final static Integer AUTO_JUMP = 3;
 
-    //报名发布状态  1已发布 2未发布
+    //报名发布状态  1已发布 0未发布
     public final static Integer RELEASE_IS_RELEASE = 1;
 
-    public final static Integer RELEASE_NOT_RELEASE = 2;
+    public final static Integer RELEASE_NOT_RELEASE = 0;
+
+    //删除状态  不可删除
+    public final static Integer DELETED_OK = 2;
+
+    //删除状态 可以删除
+    public final static Integer DELETED_NO = 1;
+
+    //通用 是否 1是 2否
+    public final static Integer IS_YES = 1;
+
+    public final static Integer IS_NO = 0;
 
 }

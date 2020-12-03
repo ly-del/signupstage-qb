@@ -1,18 +1,25 @@
 package com.cb.signupstage.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author: ly
  * @time: 2020/11/16 13:45
  * @description: 用户报名传参vo
  */
-@Getter
-@Setter
-public class UserSignBindVo {
+@Data
+public class UserSignBindVo implements Serializable {
+
+    private static final long serialVersionUID = -6927414111393716494L;
 
     /**
      * 报名id
@@ -22,7 +29,7 @@ public class UserSignBindVo {
     /**
      * 登陆账号
      */
-    private String username;
+    private String userName;
 
     /**
      * 工号
@@ -82,6 +89,7 @@ public class UserSignBindVo {
     /**
      * 描述
      */
-    private String customInformation;
+
+    private Object customInformation;
 
 }

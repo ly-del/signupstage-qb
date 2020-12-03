@@ -44,7 +44,29 @@
       and info.positionName = #{entity.positionName}
     </if>
     <if test="entity.idCard != null and entity.idCard != ''">
-      and info.idCard =like    concat( #{entity.idCard} , '%')
+      and info.idCard like    concat( #{entity.idCard} , '%')
     </if>
+    <if test="entity.groupId != null and entity.groupId != ''">
+      and g.id = #{entity.groupId}
+    </if>
+  </select>
+  <select id="getById" resultType="com.cb.signupstage.dto.UserInfoPageDTO">
+    select
+    info.id,
+    info.userName,
+    info.avatar,
+    info.sex,
+    info.mobile,
+    info.idCard,
+    info.deptId,
+    info.deptName,
+    info.positionName,
+    g.group_name as groupName
+
+    from user_info info
+    LEFT JOIN user_group_bind gb on gb.user_id = info.id
+    LEFT JOIN user_group g on g.id = gb.group_id
+
+    where g.`status` = 1 and info.`status` = 1 and info.id = #{id}
   </select>
 </mapper>

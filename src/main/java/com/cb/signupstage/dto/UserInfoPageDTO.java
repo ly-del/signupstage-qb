@@ -1,5 +1,6 @@
 package com.cb.signupstage.dto;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +9,7 @@ import lombok.Setter;
  * @time: 2020/11/12 14:23
  * @description:
  */
-@Getter
-@Setter
+@Data
 public class UserInfoPageDTO {
     private Long id;
 

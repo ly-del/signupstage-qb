@@ -21,10 +21,7 @@ import java.util.ArrayList;
 @EnableSwagger2   //开启swagger2
 public class SwaggerConfig {
 
-/*    @Bean//配置swagger的Docket的bean实例
-    public Docket docket(){
-        return new Docket(DocumentationType.SWAGGER_2).apiInfo(apiInfo());
-    }*/
+
     @Bean//配置swagger的Docket的bean实例
     public Docket docket(){
         return new Docket(DocumentationType.SWAGGER_2).apiInfo(apiInfo());

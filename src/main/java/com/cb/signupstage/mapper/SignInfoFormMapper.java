@@ -1,8 +1,11 @@
 package com.cb.signupstage.mapper;
 
+import com.cb.signupstage.dto.SignInfoFormDTO;
 import com.cb.signupstage.entity.SignInfoForm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * <p>
@@ -15,4 +18,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SignInfoFormMapper extends BaseMapper<SignInfoForm> {
 
+    List<SignInfoFormDTO> getFormList(Long signInfoId);
 }

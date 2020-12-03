@@ -1,6 +1,7 @@
 package com.cb.signupstage.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cb.signupstage.common.SignDec;
 import com.cb.signupstage.common.enums.DBStatusEnum;
@@ -13,7 +14,9 @@ import com.cb.signupstage.mapper.UserGroupEntityMapper;
 import com.cb.signupstage.mapper.UserGroupMapper;
 import com.cb.signupstage.service.StudentGroupService;
 import com.cb.signupstage.utils.CopyUtils;
+import com.cb.signupstage.vo.UserGroupTitleVo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -45,8 +48,11 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
     private StudentGroupService studentGroupService;
 
     @Override
-    public String createGroup(UserGroup userGroupEntity, Long accountId) {
+    public String createGroup(String groupName , Long parentId, Long accountId) {
       String failMsg = null;
+        UserGroup userGroupEntity = new UserGroup();
+        userGroupEntity.setGroupName(groupName);
+        userGroupEntity.setParentId(parentId);
         List<UserGroup> selectList = getExistMsg(userGroupEntity, accountId);
 
         if (!CollectionUtils.isEmpty(selectList)){
@@ -56,6 +62,7 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         }
         //数据不存在 就插入数据
         userGroupEntity.setCreateTime(new Date());
+        userGroupEntity.setAccountId(accountId);
         userGroupEntity.setStatus(DBStatusEnum.EFFECT_STATUS.getCode());
         int count = userGroupEntityMapper.insert(userGroupEntity);
         return  failMsg ;
@@ -86,8 +93,10 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
     }
 
     @Override
-    public String deleteGroup(UserGroup userGroup, Long accountId) {
+    public String deleteGroup(Long groupId, Long accountId) {
         String failMsg = null;
+        UserGroup userGroup = new UserGroup();
+        userGroup.setId(groupId);
         List<UserGroup> selectList = getExistMsg(userGroup, accountId);
 
         if (CollectionUtils.isEmpty(selectList)){
@@ -108,14 +117,13 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         if (userGroupBinds.size()==0){
             //删除
             log.info("======没有用户绑定在该组");
-            //删除
-            List<UserGroup> groupList =new ArrayList<>();
-            list.forEach(id->{
-                UserGroup group = new UserGroup();
-                group.setId(id);
-                group.setStatus(SignDec.STATUS_DELETED);
-            });
-            studentGroupService.updateBatchById(groupList);
+
+            LambdaUpdateWrapper<UserGroup> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.in(UserGroup::getId, list).set(UserGroup::getStatus, SignDec.STATUS_DELETED);
+
+            userGroupMapper.update(null, lambdaUpdateWrapper);
+
+
             failMsg="删除成功";
             return failMsg;
         }
@@ -133,7 +141,11 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         userGroupEntity.setStatus(SignDec.STATUS_UN_DELETED);
         QueryWrapper<UserGroup> wrapper  = new QueryWrapper<>(userGroupEntity) ;
         List<UserGroup> selectList = userGroupEntityMapper.selectList(wrapper);
-        List<UserGroupDTO> copyList = CopyUtils.copy(selectList, UserGroupDTO.class);
+        List<UserGroupTitleVo> copy = CopyUtils.copy(selectList, UserGroupTitleVo.class);
+        for (UserGroupTitleVo userGroupTitleVo : copy) {
+            userGroupTitleVo.setTitle(userGroupTitleVo.getGroupName());
+        }
+        List<UserGroupDTO> copyList = CopyUtils.copy(copy, UserGroupDTO.class);
         return listToTree(copyList);
     }
     public static List<UserGroupDTO> listToTree( List<UserGroupDTO> list) {
@@ -150,7 +162,7 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         for (UserGroupDTO node : list) {
             if (node.getParentId() == tree.getId()) {
                 if (tree.getChildren() == null) {
-                    tree.setChildren(new ArrayList<UserGroup>());
+                    tree.setChildren(new ArrayList<UserGroupTitleVo>());
                 }
                 tree.getChildren().add(findChildren(node, list));
             }
