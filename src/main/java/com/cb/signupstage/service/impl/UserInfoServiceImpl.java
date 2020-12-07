@@ -72,7 +72,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             if (customizeList.size()>0) {
                 //存在 则创建失败
-                return ResultBean.builder().result(false).data(customize).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.CREATE_EXIST_DATA).build();
+                return ResultBean.builder().result(false).data(customize).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.CREATE_EXIST_DATA).build();
             }
             userCustomize.setType(2);
             userCustomize.setStatus(1);
@@ -117,7 +117,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtils.isEmpty(userInfoDTO.getMobile()) || ObjectUtils.isEmpty(userInfoDTO.getUsername()) ||
                 ObjectUtils.isEmpty(userInfoDTO.getGroupId())
         ) {
-            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("手机号、姓名、分组不能为空").build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg("手机号、姓名、分组不能为空").build();
         }
 
         if (ObjectUtils.isEmpty(userInfoDTO.getId())) {
@@ -128,7 +128,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             select.setMobile(userInfoDTO.getMobile());
             List<UserInfo> userList = userInfoMapper.selectBySelect(select);
            if (userList.size()>0){
-               return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("该手机号已注册").build();
+               return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg("该手机号已注册").build();
            }
             UserInfo userInfo = new UserInfo();
 
@@ -192,7 +192,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setStatus(0);
         int i = userInfoMapper.updateByPrimaryKeySelective(userInfo);
         if (i==0){
-            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
         }
         return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("删除成功").build();
     }

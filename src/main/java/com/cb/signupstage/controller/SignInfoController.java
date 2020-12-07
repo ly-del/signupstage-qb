@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 @Api(tags = "报名设置基础信息")
 @RestController
 @Slf4j
-@RequestMapping("api/sign-info")
+@RequestMapping("/sign-info")
 public class SignInfoController {
 
     @Autowired
@@ -124,7 +124,7 @@ public class SignInfoController {
     @PostMapping(value = "/page/usersignPage")
     public ResultBean<UserSearchVo> usersignPage(@RequestBody UserSearchVo vo, @RequestHeader Long accountId) {
         if (ObjectUtils.isEmpty(vo.getSignId())){
-            return new ResultBean<>(500,"报名id不能为空",false,null);
+            return new ResultBean<>(200,"报名id不能为空",true,null);
         }
         Page<SignInfo> page = new Page<>();
         page.setPageNum(vo.getJumpPage());
@@ -143,12 +143,16 @@ public class SignInfoController {
             @RequestHeader Long accountId) {
         Long id =  Long.valueOf(map.get("id"));
         if(  ObjectUtils.isEmpty( id)){
-            return ResultBean.builder().statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).result(false).build();
+            return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).build();
         }
 
         //查报名信息基础设置
         //基本信息
         SignInfo signInfo = signInfoService.getById(id);
+
+        if (ObjectUtils.isEmpty(signInfo)){
+            return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.QUERY_NOT_EXIST_DATA).result(true).build();
+        }
         //表单信息
         List<SignInfoFormDTO> formList = signInfoFormService.getFormList(id);
 
@@ -158,7 +162,7 @@ public class SignInfoController {
         SignInfoSaveVo signInfoSaveVo = CopyUtils.copy(signInfo, SignInfoSaveVo.class);
         signInfoSaveVo.setFormList(sortList);
         if (ObjectUtils.isEmpty(sortList)){
-            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.QUERY_NOT_EXIST_DATA).build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.QUERY_NOT_EXIST_DATA).build();
         }
         return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(true).data(signInfoSaveVo).failMsg(null).build();
     }
@@ -197,7 +201,7 @@ public class SignInfoController {
         Long parentId = Long.valueOf(map.get("parentId"));
         log.info("student create group accountId.{} parentId.{}  groupName.{}", accountId, groupName,parentId);
         if (org.springframework.util.ObjectUtils.isEmpty(parentId) || org.springframework.util.ObjectUtils.isEmpty(groupName)) {
-            return ResultBean.builder().statusCode(StatusCode.MISSING_PARAMETERS_CODE).failMsg(FailStatusMsg.MISSING_PARAMETERS).result(false).build();
+            return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.MISSING_PARAMETERS).result(false).build();
         }
         String failMsg = studentGroupService.createGroup(groupName,parentId, accountId);
         boolean createResult = org.springframework.util.StringUtils.isEmpty(failMsg);
@@ -210,7 +214,7 @@ public class SignInfoController {
 
         log.info("student create group accountId.{} userGroupEntity.{}", accountId, userGroupEntity.toString());
         if (org.springframework.util.ObjectUtils.isEmpty(userGroupEntity.getId())) {
-            return ResultBean.builder().statusCode(StatusCode.MISSING_PARAMETERS_CODE).failMsg(FailStatusMsg.MISSING_PARAMETERS).result(false).build();
+            return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.MISSING_PARAMETERS).result(false).build();
         }
         String failMsg = studentGroupService.updateGroup(userGroupEntity, accountId);
         boolean createResult = org.springframework.util.StringUtils.isEmpty(failMsg);
@@ -225,7 +229,7 @@ public class SignInfoController {
         Long id = Long.valueOf(map.get("id"));
         log.info("student create group accountId.{} userGroupEntity.{}", accountId, id);
         if (org.springframework.util.ObjectUtils.isEmpty(id)) {
-            return ResultBean.builder().statusCode(StatusCode.MISSING_PARAMETERS_CODE).failMsg(FailStatusMsg.MISSING_PARAMETERS).result(false).build();
+            return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.MISSING_PARAMETERS).result(false).build();
         }
         String failMsg = studentGroupService.deleteGroup(id, accountId);
         boolean createResult = org.springframework.util.StringUtils.isEmpty(failMsg);
@@ -259,7 +263,7 @@ public class SignInfoController {
 
         log.info("save studentInfo map.{} accountId.{} ", customize, accountId);
         if (org.springframework.util.ObjectUtils.isEmpty(customize)) {
-            return ResultBean.builder().statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).result(false).build();
+            return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).build();
         }
 
         return userInfoService.saveCustomize(map,accountId);
@@ -293,7 +297,7 @@ public class SignInfoController {
         Long id = Long.valueOf(map.get("id"));
         int i = userInfoService.deleteUserCustomize(id);
         if (i < 1) {
-            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
         }
        boolean b = false;
         //先查询 有没有 占用

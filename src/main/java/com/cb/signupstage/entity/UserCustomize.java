@@ -38,8 +38,12 @@ public class UserCustomize implements Serializable {
     @TableField("account_id")
     private Long accountId;
 
+    @TableField("is_must")
+    private Integer isMust;
 
 
+    @TableField("field")
+    private String field;
     /**
      * 自定义种类状态  1 正常 2 删除
      */

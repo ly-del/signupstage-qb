@@ -141,7 +141,7 @@
 <!--查询 自定义信息 列表-->
   <select id="getCustomizeList" resultType="com.cb.signupstage.entity.UserCustomize">
     select
-    id, name, type,status
+    id, name, type,status,is_must as isMust ,field
     from user_customize
     <where> status = 1
     <if test="name != null and name != ''">

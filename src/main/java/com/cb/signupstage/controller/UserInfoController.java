@@ -42,7 +42,7 @@ import java.util.Map;
 @Api(tags = "用户信息列表")
 @RestController
 @Slf4j
-@RequestMapping("api/sign-up")
+@RequestMapping("/sign-up")
 public class UserInfoController {
 
 
