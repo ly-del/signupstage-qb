@@ -26,11 +26,11 @@
     info.positionName,
     g.group_name as groupName
 
-    from user_info info
-    LEFT JOIN user_group_bind gb on gb.user_id = info.id
+    from user_group_bind gb
+    LEFT JOIN user_info info on  info.id =  gb.user_id
     LEFT JOIN user_group g on g.id = gb.group_id
 
-    where g.`status` = 1 and info.`status` = 1
+    where g.`status` = 1 and gb.`status` = 1
     <if test="entity.sex != null and entity.sex != ''">
       and info.sex = #{entity.sex}
     </if>

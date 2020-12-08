@@ -68,7 +68,7 @@ public class UserInfoController {
 
     /**
      * 用户删除
-     *
+     *学生删除
      * @param
      * @return
      */
@@ -76,9 +76,9 @@ public class UserInfoController {
     @PostMapping(value = "/delete/userinfo")
     public ResultBean deleteUserInfo(@RequestBody Map<String ,Object> map ) {
         List<Long> ids = (List<Long>) map.get("id");
-        LambdaUpdateWrapper<UserInfo> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.in(UserInfo::getId, ids).set(UserInfo::getStatus, SignDec.STATUS_DELETED);
-        userInfoService.update(null,lambdaUpdateWrapper);
+        LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.in(UserGroupBind::getUserId, ids).set(UserGroupBind::getStatus, SignDec.STATUS_DELETED);
+        userGroupBindService.update(null,lambdaUpdateWrapper);
         return ResultBean.builder().result(true).data(null).statusCode(StatusCode.SUCCESS_CODE).build();
 
     }
