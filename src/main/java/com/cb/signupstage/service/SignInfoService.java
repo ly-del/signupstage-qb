@@ -1,5 +1,7 @@
 package com.cb.signupstage.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cb.signupstage.common.ResultBean;
 import com.cb.signupstage.dto.SignInfoPageDTO;
@@ -7,7 +9,6 @@ import com.cb.signupstage.entity.SignInfo;
 import com.cb.signupstage.vo.SignInfoSaveVo;
 import com.cb.signupstage.vo.UserSearchVo;
 import com.cb.signupstage.vo.UserSignSearchVo;
-import com.github.pagehelper.Page;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public interface SignInfoService extends IService<SignInfo> {
      * @param accountId
      * @return
      */
-    SignInfoPageDTO queryPage(Page<SignInfo> page, Long accountId);
+    SignInfoPageDTO queryPage( Page<SignInfo> page, Long accountId);
 
     /**
      *       查看报名人数列表
@@ -43,8 +44,10 @@ public interface SignInfoService extends IService<SignInfo> {
      * @param accountId
      * @return
      */
-    List<UserSearchVo> queryUserSignPage(Page<SignInfo> page, UserSearchVo vo, Long accountId);
-    List<UserSignSearchVo> querySignPage(Page<SignInfo> page, UserSignSearchVo vo, Long accountId);
+    IPage<UserSearchVo> queryUserSignPage(Page<SignInfo> page, UserSearchVo vo, Long accountId);
+    List<UserSignSearchVo> querySignPage( UserSignSearchVo vo, Long accountId);
 
     ResultBean saveFirst(SignInfo signInfo, Long accountId);
+
+
 }

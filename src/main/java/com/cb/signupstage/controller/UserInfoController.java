@@ -2,6 +2,8 @@ package com.cb.signupstage.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cb.signupstage.common.SignDec;
 import com.cb.signupstage.dto.CustomizeListDTO;
 import com.cb.signupstage.dto.PagedResult;
@@ -18,9 +20,9 @@ import com.cb.signupstage.service.UserGroupBindService;
 import com.cb.signupstage.service.UserInfoService;
 import com.cb.signupstage.service.impl.UserInfoServiceImpl;
 import com.cb.signupstage.utils.CopyUtils;
+import com.cb.signupstage.vo.UserDeletedVo;
 import com.cb.signupstage.vo.UserSelectPageVo;
 import com.cb.signupstage.vo.UserSignBindVo;
-import com.github.pagehelper.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -61,21 +63,36 @@ public class UserInfoController {
      */
     @ApiOperation("用户信息保存 修改")
     @PostMapping(value = "/save/userinfo")
-    public ResultBean saveUserInfo(@RequestBody UserInfoPageDTO userInfoDTO, @RequestHeader Long accounId) {
-        return userInfoService.saveUserInfo(userInfoDTO, accounId);
+    public ResultBean saveUserInfo(@RequestBody UserInfoPageDTO userInfoDTO, @RequestHeader Long accountId) {
+        return userInfoService.saveUserInfo(userInfoDTO, accountId);
 
     }
 
     /**
-     * 用户删除
-     *学生删除
+     *
+     *考生删除  删除绑定关系 不是删除用户
      * @param
      * @return
      */
-    @ApiOperation("用户删除")
+    @ApiOperation("考生删除")
     @PostMapping(value = "/delete/userinfo")
-    public ResultBean deleteUserInfo(@RequestBody Map<String ,Object> map ) {
-        List<Long> ids = (List<Long>) map.get("id");
+    public ResultBean deleteUserInfo(@RequestBody UserDeletedVo vo ) {
+        Long userId = vo.getId();
+        List<Long> groupIds = vo.getGroupIds();
+        LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(UserGroupBind::getUserId, userId)
+                           .in(UserGroupBind::getGroupId,groupIds)
+                .set(UserGroupBind::getStatus, SignDec.STATUS_DELETED);
+        userGroupBindService.update(null,lambdaUpdateWrapper);
+        return ResultBean.builder().result(true).data(null).statusCode(StatusCode.SUCCESS_CODE).build();
+
+    }
+
+    @ApiOperation("批量删除考生")
+    @PostMapping(value = "/delete/moreUserInfos")
+    public ResultBean deleteUserInfo(@RequestBody Map<String,List> map) {
+        List<Long> ids = map.get("ids");
+
         LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.in(UserGroupBind::getUserId, ids).set(UserGroupBind::getStatus, SignDec.STATUS_DELETED);
         userGroupBindService.update(null,lambdaUpdateWrapper);
@@ -92,13 +109,10 @@ public class UserInfoController {
      */
     @ApiOperation("用户列表查询")
     @PostMapping(value = "/page/query")
-    public ResultBean payPage(@RequestBody UserSelectPageVo vo, @RequestHeader Long accounId) {
+    public ResultBean payPage(@RequestBody UserSelectPageVo vo, @RequestHeader Long accountId) {
 
-        Page<UserInfo> page = new Page<>();
-        page.setPageNum(vo.getJumpPage());
-        page.setPageSize(vo.getPageSize());
-
-        PagedResult<UserInfoPageDTO> mapPagedResult = userInfoService.pageQuery(page, vo, accounId);
+        Page<UserInfo> page = new Page<>(vo.getJumpPage(), vo.getPageSize());
+        IPage<UserInfoPageDTO> mapPagedResult = userInfoService.pageQuery(page, vo, accountId);
         return ResultBean.builder().result(true).data(mapPagedResult).statusCode(StatusCode.SUCCESS_CODE).build();
     }
 
@@ -124,19 +138,7 @@ public class UserInfoController {
 
     }
 
-    @ApiOperation("用户移动到组")
-    @PostMapping(value = "/move/userToGroup")
-    public ResultBean moveUserToGroup(@RequestBody Map<String,Object> map, @RequestHeader Long accountId) {
-        List<Long> ids = (List<Long>) map.get("id");
-       Long groupId = Long.valueOf((int) map.get("groupId"));
 
-        LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.in(UserGroupBind::getUserId, ids).set(UserGroupBind::getGroupId, groupId);
-        boolean b = userGroupBindService.update(null, lambdaUpdateWrapper);
-
-        return  ResultBean.builder().data(null).result(b).failMsg(null).statusCode(StatusCode.SUCCESS_CODE).build();
-
-    }
 
 
 }

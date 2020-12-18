@@ -2,6 +2,7 @@ package com.cb.signupstage.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cb.signupstage.common.ResultBean;
 import com.cb.signupstage.common.SignDec;
 import com.cb.signupstage.common.StatusCode;
@@ -21,7 +22,6 @@ import com.cb.signupstage.vo.SignInfoSaveVo;
 import com.cb.signupstage.vo.SignInfoVo;
 import com.cb.signupstage.vo.UserSearchVo;
 import com.cb.signupstage.vo.UserSignSearchVo;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -87,7 +87,7 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
         int insert = signInfoMapper.insert(signInfo);
         if (insert < 0){
             //失败 return
-         return   ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).failMsg(null).build();
+         return   ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).failMsg("保存失败").build();
         }
 
         // 第一次新建报名 自动增加两条 固定属性 记录
@@ -105,6 +105,8 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
 
         return ResultBean.builder().data(signInfoSaveVo).statusCode(StatusCode.SUCCESS_CODE).result(true).failMsg(null).build();
     }
+
+
 
     @Override
     public String saveOrCopy(Long id ,Long accountId) {
@@ -161,13 +163,15 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
     }
 
     @Override
-    public SignInfoPageDTO queryPage(Page page, Long accountId) {
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
+    public SignInfoPageDTO queryPage(Page<SignInfo> page, Long accountId) {
+
         //先查询所有的  报名基础性信息
         SignInfo signInfo = new SignInfo();
         signInfo.setStatus(SignDec.STATUS_UN_DELETED);
         QueryWrapper<SignInfo> wrapper = new QueryWrapper<>(signInfo);
-        List<SignInfoVo> signInfoList = signInfoMapper.selectPageList(wrapper);
+        wrapper.orderByDesc("create_time");
+        IPage<SignInfoVo> signInfoList = signInfoMapper.selectPageList(page, wrapper);
+
 
         //查询本周报名人数 和 本月报名人数 和报名总收益
         //本周
@@ -177,8 +181,8 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
       //查询收益
 
         SignInfoPageDTO dto = signInfoMapper.selectCountAndCost();
-        PagedResult<SignInfoVo> signInfoVoPagedResult = new PagedResult<>(signInfoList);
-        dto.setPagedResult(signInfoVoPagedResult);
+       // PagedResult<SignInfoVo> signInfoVoPagedResult = new PagedResult<>(signInfoList);
+        dto.setPagedResult(signInfoList);
         return dto;
 
     }
@@ -190,18 +194,18 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
 
 
     @Override
-    public List<UserSearchVo> queryUserSignPage(Page<SignInfo> page, UserSearchVo vo, Long accountId) {
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
+    public IPage<UserSearchVo> queryUserSignPage(Page<SignInfo> page, UserSearchVo vo, Long accountId) {
+     //   PageHelper.startPage(page.getPageNum(), page.getPageSize());
         //先查询所有的  报名基础性信息
-
-        List<UserSearchVo> userSignList = userSignInfoMapper.selectPageList(vo,accountId);
+        IPage<UserSearchVo> userSignList = userSignInfoMapper.selectPageList(page,vo,accountId);
+      // List<UserSearchVo> userSignList = userSignInfoMapper.selectPageList(vo,accountId);
 
         return userSignList;
     }
 
     @Override
-    public List<UserSignSearchVo> querySignPage(Page<SignInfo> page, UserSignSearchVo vo, Long accountId) {
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
+    public List<UserSignSearchVo> querySignPage( UserSignSearchVo vo, Long accountId) {
+       // PageHelper.startPage(page.getPageNum(), page.getPageSize());
         //先查询所有的  报名基础性信息
 
         List<UserSignSearchVo> userSignList = userSignInfoMapper.selectExportPageList(vo,accountId);

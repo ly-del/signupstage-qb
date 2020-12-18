@@ -1,6 +1,8 @@
 package com.cb.signupstage.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cb.signupstage.dto.UserInfoPageDTO;
 import com.cb.signupstage.entity.UserGroup;
 import com.cb.signupstage.entity.UserInfo;
@@ -71,7 +73,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
      * @param accountId
      * @return
      */
-    List<UserInfoPageDTO> pageQuery(@Param("entity")UserSelectPageVo vo, Long accountId);
+    IPage<UserInfoPageDTO> pageQuery(Page<UserInfo> page, @Param("entity")UserSelectPageVo vo, Long accountId);
 
     UserInfoPageDTO getById(Long id);
 }

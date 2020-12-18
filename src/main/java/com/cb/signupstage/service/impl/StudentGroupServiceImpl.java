@@ -3,6 +3,7 @@ package com.cb.signupstage.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cb.signupstage.common.ResultBean;
 import com.cb.signupstage.common.SignDec;
 import com.cb.signupstage.common.enums.DBStatusEnum;
 import com.cb.signupstage.dto.UserGroupDTO;
@@ -79,17 +80,14 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
 
     @Override
     public String updateGroup(UserGroup userGroupEntity, Long accountId) {
-        String failMsg = null;
-        List<UserGroup> selectList = getExistMsg(userGroupEntity, accountId);
-
-        if (CollectionUtils.isEmpty(selectList)){
-            //数据存在 插入失败
-            // TODO 确认
-            failMsg = "数据源不存在";
-        }
+        String fsg=null;
         //修改
-        userGroupEntityMapper.updateById(userGroupEntity);
-        return null;
+        int i = userGroupEntityMapper.updateById(userGroupEntity);
+        if (i < 1){
+            fsg ="更新失败";
+            return fsg;
+        }
+        return fsg;
     }
 
     @Override
@@ -102,7 +100,7 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         if (CollectionUtils.isEmpty(selectList)){
             // TODO 确认
             failMsg = "数据源不存在";
-            return failMsg;
+           return failMsg;
         }
         //判断该分组下有没有 考生用户
            //查找考生是否存在
@@ -122,8 +120,6 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
             lambdaUpdateWrapper.in(UserGroup::getId, list).set(UserGroup::getStatus, SignDec.STATUS_DELETED);
 
             userGroupMapper.update(null, lambdaUpdateWrapper);
-
-
             failMsg="删除成功";
             return failMsg;
         }

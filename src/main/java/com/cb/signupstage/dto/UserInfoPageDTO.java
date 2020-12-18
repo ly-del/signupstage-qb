@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * @author: ly
  * @time: 2020/11/12 14:23
@@ -16,27 +18,27 @@ public class UserInfoPageDTO {
     /**
      * 分组id
      */
-    private Long groupId;
+    private List<Long> groupIds;
 
     /**
      * 登陆账号
      */
-    private String username;
+    private String userName;
 
     /**
      * 工号
      */
-    private String jobno;
+    private String jobNo;
 
     /**
      * 昵称
      */
-    private String nickname;
+    private String nickName;
 
     /**
      * 头像
      */
-    private String avatar;
+    private String faceUrl;
 
     /**
      * 邮箱
@@ -72,11 +74,13 @@ public class UserInfoPageDTO {
      * 部门
      */
     private String  deptName;
-    private String  idcard;
+    private String  idCard;
     private String  customInformation;
 
     /**
      *
      */
     private String  groupName;
+
+    private String groupId;
 }

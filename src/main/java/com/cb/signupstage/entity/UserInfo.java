@@ -34,14 +34,14 @@ public class UserInfo implements Serializable {
     /**
      * 工号
      */
-    @TableField("jobno")
-    private String jobno;
+    @TableField("jobNo")
+    private String jobNo;
 
     /**
      * 昵称
      */
-    @TableField("nickname")
-    private String nickname;
+    @TableField("nickName")
+    private String nickName;
 
     /**
      * 头像
@@ -82,43 +82,43 @@ public class UserInfo implements Serializable {
     /**
      * 城市
      */
-    @TableField("citystring")
-    private String citystring;
+    @TableField("cityString")
+    private String cityString;
 
     /**
      * '用户类型:platform-平台 isp-服务提供商 dev-自研开发者'
      */
-    @TableField("usertype")
-    private String usertype;
+    @TableField("userType")
+    private String userType;
 
     /**
      * 入职时间
      */
-    @TableField("hiredate")
-    private String hiredate;
+    @TableField("hireDate")
+    private String hireDate;
 
     /**
      * 职位
      */
-    @TableField("positionname")
-    private String positionname;
+    @TableField("positionName")
+    private String positionName;
 
     /**
      * 所属部门
      */
-    @TableField("deptname")
-    private String deptname;
+    @TableField("deptName")
+    private String deptName;
     /**
      * 企业ID
      */
-    @TableField("companyid")
-    private Long companyid;
+    @TableField("companyId")
+    private Long companyId;
 
     /**
      * 注册IP
      */
-    @TableField("registerip")
-    private String registerip;
+    @TableField("registerIp")
+    private String registerIp;
 
     /**
      * 用户状态0-禁用 1-启用 2-锁定
@@ -129,32 +129,32 @@ public class UserInfo implements Serializable {
     /**
      * 描述
      */
-    @TableField("userdesc")
-    private String userdesc;
+    @TableField("userDesc")
+    private String userDesc;
 
     /**
      * 分组id
      */
-    @TableField("createtime")
-    private Date createtime;
+    @TableField("createTime")
+    private Date createTime;
 
     /**
      * 分组id
      */
-    @TableField("updatetime")
-    private Date updatetime;
+    @TableField("updateTime")
+    private Date updateTime;
 
     /**
      * 分组id
      */
-    @TableField("updateuser")
-    private String updateuser;
+    @TableField("updateUser")
+    private String updateUser;
 
     /**
      * 分组id
      */
-    @TableField("createuser")
-    private String createuser;
+    @TableField("createUser")
+    private String createUser;
 
     /**
      * 生日

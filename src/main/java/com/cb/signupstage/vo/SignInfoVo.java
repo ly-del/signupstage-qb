@@ -26,4 +26,5 @@ public class SignInfoVo extends SignInfo {
     @ApiModelProperty(value = "分组名称")
     private String groupName;
 
+
 }

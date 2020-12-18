@@ -13,6 +13,7 @@ info.cost,
 info.image,
 info.start_time,
 info.end_time,info.create_time,
+info.group_id,
 IF(g.group_name IS NULL,"未分组",g.group_name) as groupName,
 COUNT(bind.id) AS count,
 	SUM(
@@ -28,7 +29,7 @@ LEFT JOIN user_sign_info bind ON bind.sign_id = info.id
 LEFT JOIN user_group g on g.id = info.group_id
 where info.`status` = 1
 GROUP BY
-	info.id
+	info.id ORDER BY info.create_time DESC
     </select>
 
     <!--查询报名人数和总收益-->
@@ -77,4 +78,5 @@ FROM
 WHERE
 	DATE_FORMAT(create_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
 	</select>
+
 </mapper>

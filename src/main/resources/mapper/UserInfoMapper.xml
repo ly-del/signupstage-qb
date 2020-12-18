@@ -24,7 +24,8 @@
     info.deptId,
     info.deptName,
     info.positionName,
-    g.group_name as groupName
+    GROUP_CONCAT(g.group_name) as groupName,
+    GROUP_CONCAT(g.id) as groupId
 
     from user_group_bind gb
     LEFT JOIN user_info info on  info.id =  gb.user_id
@@ -47,8 +48,9 @@
       and info.idCard like    concat( #{entity.idCard} , '%')
     </if>
     <if test="entity.groupId != null and entity.groupId != ''">
-      and g.id = #{entity.groupId}
+      and g.id in (#{entity.groupId})
     </if>
+    GROUP BY user_id order by info.createTime desc
   </select>
   <select id="getById" resultType="com.cb.signupstage.dto.UserInfoPageDTO">
     select

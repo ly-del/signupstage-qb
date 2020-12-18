@@ -1,5 +1,6 @@
 package com.cb.signupstage.dto;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cb.signupstage.vo.SignInfoVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -23,6 +24,6 @@ public class SignInfoPageDTO {
     @ApiModelProperty(value = "费用")
     private BigDecimal cost;
 
-    PagedResult<SignInfoVo> pagedResult;
+    IPage<SignInfoVo> pagedResult;
 
 }

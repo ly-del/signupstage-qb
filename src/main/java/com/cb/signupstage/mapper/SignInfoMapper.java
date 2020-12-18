@@ -2,6 +2,8 @@ package com.cb.signupstage.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cb.signupstage.dto.SignInfoPageDTO;
 import com.cb.signupstage.entity.SignInfo;
 import com.cb.signupstage.vo.SignInfoVo;
@@ -13,7 +15,9 @@ import java.util.Map;
 @Repository
 public interface SignInfoMapper extends BaseMapper<SignInfo> {
 
-    List<SignInfoVo> selectPageList(QueryWrapper<SignInfo> wrapper);
+    IPage<SignInfoVo> selectPageList(Page<SignInfo> page,QueryWrapper<SignInfo> wrapper);
+
+
 
     SignInfoPageDTO selectCountAndCost();
 
@@ -22,5 +26,6 @@ public interface SignInfoMapper extends BaseMapper<SignInfo> {
 
     //查询本月的报名人数
     int selectThisMonthCount();
+
 
 }

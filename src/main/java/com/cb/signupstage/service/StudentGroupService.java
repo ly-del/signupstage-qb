@@ -1,6 +1,7 @@
 package com.cb.signupstage.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cb.signupstage.common.ResultBean;
 import com.cb.signupstage.dto.UserGroupDTO;
 import com.cb.signupstage.entity.UserGroup;
 
