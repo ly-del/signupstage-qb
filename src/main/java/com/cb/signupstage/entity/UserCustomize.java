@@ -2,14 +2,12 @@ package com.cb.signupstage.entity;
 
 
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -45,25 +43,25 @@ public class UserCustomize implements Serializable {
     @TableField("field")
     private String field;
     /**
-     * 自定义种类状态  1 正常 2 删除
+     * 自定义种类状态  0 正常 1 删除
      */
-    @TableField("status")
-    private Integer status;
+    @TableField(value = "deleted",fill = FieldFill.INSERT)
+    private Integer deleted;
 
     /**
      *创建时间
      */
 
-    @TableField("create_time")
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd hh:mm:ss")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     /**
      *更新时间
      */
-    @TableField("update_time")
+    @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd hh:mm:ss")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
 
 

@@ -43,4 +43,39 @@ public class ResultBean<T> implements Serializable{
      */
     @ApiModelProperty(value = "接口返回数据")
     private T data;
+
+    //返回成功
+    public static ResultBean success(){
+        ResultBean resultBean = new ResultBean();
+        resultBean.setStatusCode(200);
+        resultBean.setResult(true);
+        return resultBean;
+    }
+
+    public static ResultBean success(String failmsg){
+        ResultBean resultBean = new ResultBean();
+        resultBean.setStatusCode(200);
+        resultBean.setResult(true);
+        resultBean.setFailMsg(failmsg);
+        return resultBean;
+    }
+
+    //返回成功
+    public static ResultBean success(Object data,String failmsg){
+        ResultBean resultBean = new ResultBean();
+        resultBean.setStatusCode(200);
+        resultBean.setResult(true);
+        resultBean.setFailMsg(failmsg);
+        resultBean.setData(data);
+        return resultBean;
+    }
+    //返回失败
+    public static ResultBean failure(String failmsg){
+        ResultBean resultBean = new ResultBean();
+        resultBean.setStatusCode(500);
+        resultBean.setResult(false);
+        resultBean.setFailMsg(failmsg);
+        return resultBean;
+    }
+
 }

@@ -20,12 +20,8 @@ import com.cb.signupstage.service.UserInfoService;
 import com.cb.signupstage.utils.CopyUtils;
 import com.cb.signupstage.vo.UserSelectPageVo;
 import com.cb.signupstage.vo.UserSignBindVo;
-import com.github.pagehelper.PageHelper;
-import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.codehaus.jettison.json.JSONObject;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * @author: ly
  * @time: 2020/11/11 9:38
- * @description:  考生报名 业务层
+ * @description: 考生报名 业务层
  */
 @Slf4j
 @Service
@@ -62,41 +58,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     private UserGroupBindService userGroupBindService;
 
-    /**
-     * 保存 修改 自定义类信息
-     * @param
-     * @return
-     */
-    public ResultBean saveCustomize(Map<String,String> map,Long accountId) {
-        String customize = map.get("customize");
 
-        UserCustomize userCustomize = new UserCustomize();
-        if (ObjectUtils.isEmpty(map.get("id"))) {
-            //先查询 如果已存在 则新建失败
-            userCustomize.setName(customize);
-            List customizeList = getCustomizeList(userCustomize);
-
-            if (customizeList.size()>0) {
-                //存在 则创建失败
-                return ResultBean.builder().result(false).data(customize).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.CREATE_EXIST_DATA).build();
-            }
-            userCustomize.setType(2);
-            userCustomize.setStatus(1);
-            userCustomize.setAccountId(accountId);
-            userCustomize.setCreateTime(new Date());
-            userCustomize.setUpdateTime(new Date());
-            userCustomizeMapper.insert(userCustomize);
-               return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("保存成功").build();
-        }
-
-        //修改
-        userCustomize.setId(Long.valueOf(map.get("id")));
-        userCustomize.setName(customize);
-        userCustomize.setUpdateTime(new Date());
-         userCustomizeMapper.updateByPrimaryKeySelective(userCustomize);
-         return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("修改成功成功").build();
-
-    }
 
 
     /**
@@ -107,18 +69,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return customizeList;
     }
 
-    /**
-     * 删除 自定义信息 列表
-     */
-    public int deleteUserCustomize(Long id) {
-        UserCustomize userCustomize = new UserCustomize();
-        userCustomize.setId(id);
-        userCustomize.setStatus(2);
-        userCustomize.setUpdateTime(new Date());
-        return userCustomizeMapper.updateByPrimaryKeySelective(userCustomize);
-    }
 
-    public ResultBean saveUserInfo(UserInfoPageDTO userInfoDTO ,  Long accountId) {
+    public ResultBean saveUserInfo(UserInfoPageDTO userInfoDTO, Long accountId) {
         //姓名和手机号必填
         if (ObjectUtils.isEmpty(userInfoDTO.getMobile()) || ObjectUtils.isEmpty(userInfoDTO.getUserName()) ||
                 ObjectUtils.isEmpty(userInfoDTO.getGroupIds())
@@ -134,18 +86,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             select.setMobile(userInfoDTO.getMobile());
             select.setStatus(SignDec.STATUS_UN_DELETED);
             List<UserInfo> userList = userInfoMapper.selectBySelect(select);
-           if (userList.size()>0){
-               return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg("该手机号已注册").build();
-           }
+            if (userList.size() > 0) {
+                return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg("该手机号已注册").build();
+            }
             UserInfo userInfo = new UserInfo();
 
             UserInfo copy = CopyUtils.copy(userInfoDTO, UserInfo.class);
             copy.setStatus(1);
-            copy.setCreateTime(new Date());
-            copy.setUpdateTime(new Date());
             userInfoMapper.insert(copy);
 
-            List<UserGroupBind> saveBean= new ArrayList<>();
+            List<UserGroupBind> saveBean = new ArrayList<>();
             //用户分组关系
             for (Long groupId : userInfoDTO.getGroupIds()) {
                 UserGroupBind userGroupBind = new UserGroupBind();
@@ -153,11 +103,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userGroupBind.setAccountId(accountId);
                 userGroupBind.setCreateTime(LocalDateTime.now());
                 userGroupBind.setGroupId(groupId);
-                userGroupBind.setStatus(SignDec.STATUS_UN_DELETED);
+                userGroupBind.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
                 userGroupBind.setUpdateTime(LocalDateTime.now());
                 saveBean.add(userGroupBind);
             }
-         
+
             //添加用户分组关系表数据
             userGroupBindService.saveBatch(saveBean);
 
@@ -173,7 +123,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         QueryWrapper<UserInfo> wrapper = new QueryWrapper<>(select);
         List<UserInfo> userList = userInfoMapper.selectList(wrapper);
 
-        if (userList.size()>0) {
+        if (userList.size() > 0) {
             if (!userInfoDTO.getId().equals(userList.get(0).getId())) {
                 //手机号已被注册
                 return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("该手机号已注册").build();
@@ -183,30 +133,30 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         UserInfo copy = CopyUtils.copy(userInfoDTO, UserInfo.class);
 
-        copy.setUpdateTime(new Date());
+
         int i = userInfoMapper.updateById(copy);
 
-        if (i<1){
+        if (i < 1) {
             return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
         }
         //先查出已经在的 考生与分组绑定关系  根据考生id 查询
-      List<Long> groupIds =  userGroupBindMapper.selectGroupIds(copy.getId());
+        List<Long> groupIds = userGroupBindMapper.selectGroupIds(copy.getId());
         //交集  传过来有 数据库 也有 就修改状态为正常  因为 查询 数据库数据是查全部 没有根据状态条件查询,
         // 在原有数据 上进行操作 无法根据状态条件查询
         Collection<Long> intersection = CollectionUtils.intersection(userInfoDTO.getGroupIds(), groupIds);
         //差集 传过来有 数据库没有  就新增
         Collection<Long> addSubtract = CollectionUtils.subtract(userInfoDTO.getGroupIds(), groupIds);
-        //差集 传过来 没有 数据库有  就山茶油 改变状态为 已删除
+        //差集 传过来 没有 数据库有  就删除 改变状态为 已删除
         Collection<Long> delSubtract = CollectionUtils.subtract(groupIds, userInfoDTO.getGroupIds());
-      if (intersection.size()>0){
-          //更改状态  为 正常
-          LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-          lambdaUpdateWrapper.in(UserGroupBind::getUserId, userInfoDTO.getId())
-                            .in(UserGroupBind::getGroupId, intersection)
-                  .set(UserGroupBind::getStatus, SignDec.STATUS_UN_DELETED);
-          userGroupBindMapper.update(null,lambdaUpdateWrapper);
-      }
-        if (addSubtract.size()>0){
+        if (intersection.size() > 0) {
+            //更改状态  为 正常
+            LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.in(UserGroupBind::getUserId, userInfoDTO.getId())
+                    .in(UserGroupBind::getGroupId, intersection)
+                    .set(UserGroupBind::getDeleted, SignDec.deletedType.UN_DELETED.getCode());
+            userGroupBindMapper.update(null, lambdaUpdateWrapper);
+        }
+        if (addSubtract.size() > 0) {
             List<UserGroupBind> addBean = new ArrayList<>();
             //新增
             for (Long groupId : addSubtract) {
@@ -215,21 +165,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 userGroupBind.setUpdateTime(LocalDateTime.now());
                 userGroupBind.setGroupId(groupId);
                 userGroupBind.setUserId(userInfoDTO.getId());
-                userGroupBind.setStatus(SignDec.STATUS_UN_DELETED);
+                userGroupBind.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
                 userGroupBind.setAccountId(accountId);
                 addBean.add(userGroupBind);
             }
             userGroupBindService.saveBatch(addBean);
         }
-        if (delSubtract.size()>0){
+        if (delSubtract.size() > 0) {
             //更改状态  为 已删除
             LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             lambdaUpdateWrapper.in(UserGroupBind::getUserId, userInfoDTO.getId())
                     .in(UserGroupBind::getGroupId, delSubtract)
-                    .set(UserGroupBind::getStatus, SignDec.STATUS_DELETED);
-            userGroupBindMapper.update(null,lambdaUpdateWrapper);
+                    .set(UserGroupBind::getDeleted, SignDec.deletedType.DELETED.getCode());
+            userGroupBindMapper.update(null, lambdaUpdateWrapper);
         }
-
 
 
         return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("修改成功").build();
@@ -237,13 +186,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     /**
      * 用户删除
+     *
      * @param userInfo
      * @return
      */
     public ResultBean deleteUserInfo(UserInfo userInfo) {
         userInfo.setStatus(0);
         int i = userInfoMapper.updateByPrimaryKeySelective(userInfo);
-        if (i==0){
+        if (i == 0) {
             return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
         }
         return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg("删除成功").build();
@@ -251,24 +201,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
     public IPage<UserInfoPageDTO> pageQuery(Page<UserInfo> page, UserSelectPageVo vo, Long accountId) {
-       // PageHelper.startPage(page.getPageNum(), page.getPageSize());
-        //查询列表
-        IPage<UserInfoPageDTO> userInfos = userInfoMapper.pageQuery( page,vo, accountId);
 
-if (userInfos.getSize()>0){
-    for (UserInfoPageDTO userInfoPageDTO :userInfos.getRecords() ) {
-        List<String> groupIds =  Arrays.asList(userInfoPageDTO.getGroupId().split(","));
-        List<Long> collect = groupIds.stream().map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
-        userInfoPageDTO.setGroupIds(collect);
-    }
-}
-        return  userInfos;
+        //查询列表
+        IPage<UserInfoPageDTO> userInfos = userInfoMapper.pageQuery(page, vo, accountId);
+
+        if (userInfos.getSize() > 0) {
+            for (UserInfoPageDTO userInfoPageDTO : userInfos.getRecords()) {
+                List<String> groupIds = Arrays.asList(userInfoPageDTO.getGroupId().split(","));
+                List<Long> collect = groupIds.stream().map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
+                userInfoPageDTO.setGroupIds(collect);
+            }
+        }
+        return userInfos;
     }
 
     @Override
-    public void moveUserToGroup( List<Long>  groupIds, List<Long> userIds, Long accountId) {
-        List<UserGroupBind> getList= new ArrayList<>();
-        for (Long  gId : groupIds) {
+    public void moveUserToGroup(List<Long> groupIds, List<Long> userIds, Long accountId) {
+        List<UserGroupBind> getList = new ArrayList<>();
+        for (Long gId : groupIds) {
             for (Long uId : userIds) {
                 UserGroupBind userGroupBind = new UserGroupBind();
                 userGroupBind.setUserId(uId);
@@ -277,35 +227,35 @@ if (userInfos.getSize()>0){
             }
         }
         // 根据考生查询目前所在的分组
-        QueryWrapper wrapper =new QueryWrapper();
-        wrapper.in("user_id",userIds);
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.in("user_id", userIds);
 
         List<UserGroupBind> list = userGroupBindMapper.selectList(wrapper);
         //差集 传过来没有 但数据库有
         List<UserGroupBind> list2 = list.stream()
-                .filter(item -> !getList.stream().map(e -> e.getUserId()+ "&" + e.getGroupId()).collect(Collectors.toList()).contains(item.getUserId()+ "&" + item.getGroupId()))
+                .filter(item -> !getList.stream().map(e -> e.getUserId() + "&" + e.getGroupId()).collect(Collectors.toList()).contains(item.getUserId() + "&" + item.getGroupId()))
                 .collect(Collectors.toList());
         System.out.println(list2.toArray());
         //改变绑定的分组 状态 为 2
-        if (list2.size() >0 ){
+        if (list2.size() > 0) {
             for (UserGroupBind userGroupBind : list2) {
-                userGroupBind.setStatus(SignDec.STATUS_DELETED);
+                userGroupBind.setDeleted(SignDec.deletedType.DELETED.getCode());
                 userGroupBind.setUpdateTime(LocalDateTime.now());
             }
             userGroupBindService.updateBatchById(list2);
         }
         //差集 传过来的 有 而数据库没有
         List<UserGroupBind> list1 = getList.stream()
-                .filter(item -> !list.stream().map(e -> e.getUserId()+ "&" + e.getGroupId()).collect(Collectors.toList()).contains(item.getUserId()+ "&" + item.getGroupId()))
+                .filter(item -> !list.stream().map(e -> e.getUserId() + "&" + e.getGroupId()).collect(Collectors.toList()).contains(item.getUserId() + "&" + item.getGroupId()))
                 .collect(Collectors.toList());
         System.out.println(list1.toArray());
         //新增绑定的状态
-        if (list1.size() >0 ){
+        if (list1.size() > 0) {
             for (UserGroupBind userGroupBind : list1) {
                 userGroupBind.setCreateTime(LocalDateTime.now());
                 userGroupBind.setUpdateTime(LocalDateTime.now());
                 userGroupBind.setAccountId(accountId);
-                userGroupBind.setStatus(SignDec.STATUS_UN_DELETED);
+                userGroupBind.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
             }
             //批量新增
             userGroupBindService.saveBatch(list1);
@@ -313,62 +263,58 @@ if (userInfos.getSize()>0){
 
         //相同 改变状态
         List<UserGroupBind> list3 = list.stream()
-                .filter(item -> getList.stream().map(e -> e.getUserId()+ "&" + e.getGroupId()).collect(Collectors.toList()).contains(item.getUserId()+ "&" + item.getGroupId()))
+                .filter(item -> getList.stream().map(e -> e.getUserId() + "&" + e.getGroupId()).collect(Collectors.toList()).contains(item.getUserId() + "&" + item.getGroupId()))
                 .collect(Collectors.toList());
 
-               if (list3.size()> 0){
-                   for (UserGroupBind userGroupBind : list3) {
-                       userGroupBind.setStatus(SignDec.STATUS_UN_DELETED);
-                       userGroupBind.setUpdateTime(LocalDateTime.now());
-                   }
-                   userGroupBindService.updateBatchById(list3);
-               }
+        if (list3.size() > 0) {
+            for (UserGroupBind userGroupBind : list3) {
+                userGroupBind.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
+                userGroupBind.setUpdateTime(LocalDateTime.now());
+            }
+            userGroupBindService.updateBatchById(list3);
+        }
 
     }
-
-
-
 
 
     public ResultBean userInfoBind(UserSignBindVo vo, Long accountId) {
 
         SignInfo signInfo = new SignInfo();
         signInfo.setId(vo.getSignInfoId());
-        signInfo.setStatus(SignDec.STATUS_UN_DELETED);
+        signInfo.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
         QueryWrapper<SignInfo> wrapper1 = new QueryWrapper<>(signInfo);
         List<SignInfo> signInfos = signInfoMapper.selectList(wrapper1);
-        if (signInfos.size() == 0){
-            return  ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("报名信息不存在").build();
+        if (signInfos.size() == 0) {
+            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("报名信息不存在").build();
         }
         //报名之前 先查询 是否已经报过名 (目前是手机号做唯一识别)  存在
-        List<UserSignInfo> bindList =userSignInfoMapper.getExist(vo);
-        if (bindList.size()>0){
+        List<UserSignInfo> bindList = userSignInfoMapper.getExist(vo);
+        if (bindList.size() > 0) {
             //已经存在当前报名的 报名信息记录 不能重复报名
-            return  ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("不能重复报名").build();
+            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("不能重复报名").build();
         }
-           //创建报名信息
+        //创建报名信息
         //先创建用户信息 存在就不创建
         UserInfo userInfo = new UserInfo();
         userInfo.setMobile(vo.getMobile());
         userInfo.setStatus(SignDec.STATUS_UN_DELETED);
-        if (!ObjectUtils.isEmpty(vo.getCustomInformation())){
+        if (!ObjectUtils.isEmpty(vo.getCustomInformation())) {
             String customInformation = String.valueOf(vo.getCustomInformation());
             userInfo.setCustomInformation(customInformation);
         }
 
         QueryWrapper<UserInfo> wrapper = new QueryWrapper<>(userInfo);
         List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
-       Long userId= null;
-        if (userInfos.size()  <= 0){
+        Long userId = null;
+        if (userInfos.size() <= 0) {
             //用户不存在就创建一个用户
             UserInfo copy = CopyUtils.copy(vo, UserInfo.class);
             copy.setUserName(vo.getUserName());
             copy.setCreateUser(String.valueOf(accountId));
-            copy.setCreateTime(new Date());
             copy.setStatus(SignDec.STATUS_UN_DELETED);
             userInfoMapper.insert(copy);
             userId = copy.getId();
-        }else{
+        } else {
             userId = userInfos.get(0).getId();
         }
 
@@ -377,8 +323,6 @@ if (userInfos.getSize()>0){
 
         UserSignInfo userSignInfo = CopyUtils.copy(signInfos.get(0), UserSignInfo.class);
         userSignInfo.setSignId(vo.getSignInfoId());
-        userSignInfo.setCreateTime(new Date());
-        userSignInfo.setUpdateTime(new Date());
         userSignInfo.setUserId(userId);
         userSignInfoMapper.insert(userSignInfo);
 
@@ -386,11 +330,10 @@ if (userInfos.getSize()>0){
         UserGroupBind userGroupBind = new UserGroupBind();
         userGroupBind.setUserId(userId);
         userGroupBind.setGroupId(signInfos.get(0).getGroupId());
-        userGroupBind.setStatus(SignDec.STATUS_UN_DELETED);
+        userGroupBind.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
         userGroupBind.setAccountId(accountId);
         userGroupBindMapper.insert(userGroupBind);
-        return  ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).build();
-
+        return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).build();
 
 
     }

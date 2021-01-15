@@ -11,6 +11,8 @@ spring:
     password: root
     driver-class-name: com.mysql.jdbc.Driver
 
+
+
   cache:
     type: ehcache
     ehcache:
@@ -69,9 +71,18 @@ aes:
   iv: 412ADDSSFA342442
 
 
-#log
+  #log
   logging:
   level:
-  com.cb.signupstage.mapper : debug
+  com.cb.signupstage.mapper: debug
+
+mybatis-plus:
+  type-handlers-package: com.cb.signupstage.common
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
 
 
+
+
+dataBase: flyme_cloud

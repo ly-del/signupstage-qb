@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cb.signupstage.mapper.PaperInterviewSettingMapper">
+
+
+    <select id="queryInterviewSettingPage" resultType="com.cb.signupstage.dto.PaperInterviewSettingPageDTO">
+        SELECT
+        MAX(pur.id) as id,
+        ps.paper_group_name,
+        pur.paper_name,
+        pur.create_time,
+        pur.score,
+        u.userName,
+        (
+        CASE
+        WHEN pur.score IS NOT NULL
+        AND pur.score &gt; pcs.score THEN
+        '及格'
+        WHEN pur.score IS NOT NULL
+        AND pur.score &lt; pcs.score THEN
+        '不及格'
+        WHEN GROUP_CONCAT( pis.score SEPARATOR '/' ) IS NULL
+        THEN '未开始'
+        ELSE ''
+        END
+        ) AS interviewResult,
+        GROUP_CONCAT( pis.score SEPARATOR '/' ) as scoreString,
+        CONCAT(piur.start_time,piur.end_time) as reverseTime
+        FROM
+        ( SELECT * FROM paper_upload_record ORDER BY create_time ) pur
+        LEFT JOIN paper_setting ps ON ps.id = pur.paper_group_id
+        LEFT JOIN paper_interview_score pis ON pis.paper_id = pur.id
+        LEFT JOIN paper_interview_user_relation piur ON piur.paper_id = pur.id
+        LEFT JOIN paper_score_setting pcs on pcs.test_id=ps.test_id
+        LEFT JOIN user_info u on u.id = pur.user_id
+        WHERE
+        pur.review_status = 1
+
+        <if test="entity.paperName != null and entity.paperName != ''">
+            and ps.paper_name like concat ('%',#{entity.paperName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="entity.interviewResult != null and entity.interviewResult != ''">
+            <if test="entity.interviewResult == 1">
+                and pur.score &gt; pcs.score
+            </if>
+            <if test="entity.interviewResult == 0">
+                and pur.score &lt; pcs.score
+            </if>
+            <if test="entity.interviewResult == 2">
+                and pis.score IS NULL
+            </if>
+        </if>
+        <if test="entity.userName != null and entity.userName != ''">
+            and u.userName like concat ('%',#{entity.userName},'%')
+        </if>
+        GROUP BY pur.paper_group_id,pur.user_id
+    </select>
+    <select id="exportInterviewSettingList" resultType="com.cb.signupstage.dto.PaperInterviewSettingExportDTO">
+	 SELECT
+	max(pur.id) as id,
+	ps.paper_group_name,
+	pur.paper_name,
+	pur.create_time,
+  pur.score,
+  (
+		CASE
+		WHEN pur.score IS NOT NULL
+		AND pur.score &gt; pcs.score THEN
+		'及格'
+		WHEN pur.score IS NOT NULL
+		AND pur.score &lt; pcs.score THEN
+		'不及格'
+		WHEN GROUP_CONCAT( pis.score SEPARATOR '/' ) IS NULL
+ THEN '未开始'
+		ELSE ''
+		END
+		) AS interviewResult,
+	GROUP_CONCAT( pis.score SEPARATOR '/' ) as scoreString,
+	CONCAT(piur.start_time,piur.end_time) as reverseTime
+FROM
+	( SELECT * FROM paper_upload_record ORDER BY  create_time ) pur
+	LEFT JOIN paper_setting ps ON ps.id = pur.paper_group_id
+	LEFT JOIN paper_interview_score pis ON pis.paper_id = pur.id
+	LEFT JOIN paper_interview_user_relation piur ON piur.paper_id = pur.id
+		LEFT JOIN paper_score_setting pcs on pcs.test_id=ps.test_id
+	where 	pur.id in (#{ids})
+				 GROUP BY pur.paper_group_id,pur.user_id
+	</select>
+
+    <select id="getInterviewSettingDetail" resultType="com.cb.signupstage.dto.PaperInterviewSettingPageDTO">
+		SELECT
+		pur.id,
+	pur.paper_group_id,
+	pur.paper_name,
+	pur.review_status,
+	pur.score,
+	u.userName,
+	(
+		CASE
+
+		WHEN pur.score IS NOT NULL
+		AND pur.score &gt; pcs.score THEN
+		'及格'
+		WHEN pur.score IS NOT NULL
+		AND pur.score &lt; pcs.score THEN
+		'不及格'
+		 WHEN GROUP_CONCAT( pis.score SEPARATOR '/' ) IS NULL
+ THEN '未开始'
+		 ELSE ''
+		END
+		) AS interviewResult,
+	GROUP_CONCAT( pis.score SEPARATOR '/' ) as scoreString,
+	ps.paper_group_name,
+	CONCAT(piur.booked_date,piur.start_time,"-",piur.end_time) as interviewTime
+FROM
+	paper_upload_record pur
+	LEFT JOIN paper_interview_score pis ON pis.paper_id = pur.id
+	LEFT JOIN paper_setting ps ON ps.id = pur.paper_group_id
+	LEFT JOIN paper_interview_user_relation piur ON piur.paper_id = pur.id
+	LEFT JOIN paper_score_setting pcs on pcs.test_id=ps.test_id
+	LEFT JOIN user_info u on u.id = pur.user_id
+where
+	pur.id = #{id}
+	</select>
+
+    <select id="selectListGroupByBookedDate" resultType="com.cb.signupstage.dto.InterviewListDTO">
+
+
+    SELECT
+	pis.booked_date,
+	pis.id,
+	ifnull(pis.booked_number,0) as booked_number,
+	pis.can_booked_number,
+	GROUP_CONCAT( pis.start_time, '-', pis.end_time ) AS startTime,
+    IF(pis.can_booked_number = pis.booked_number ,true,false) as isFull
+
+   FROM
+	paper_interview_setting pis
+GROUP BY
+	pis.id
+    </select>
+</mapper>

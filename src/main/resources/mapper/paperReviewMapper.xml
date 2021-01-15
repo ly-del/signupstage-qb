@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cb.signupstage.mapper.PaperReviewMapper">
+
+
+    <select id="queryPaperReviewPage" resultType="com.cb.signupstage.dto.PaperReviewPageDTO">
+        SELECT
+        pur.id,
+        pur.paper_group_id,
+        ps.paper_group_name,
+        pur.paper_name,
+        pur.review_status,
+        pur.create_time,
+        u.userName,
+        a.submitNum,
+        ex.examName as testName
+        FROM
+        ( SELECT user_id, max( create_time ) AS create_time, count( 1 ) AS submitNum FROM paper_upload_record GROUP
+        BY user_id ) a
+        LEFT JOIN paper_upload_record pur ON pur.create_time = a.create_time
+        LEFT JOIN user_info u on u.id = pur.user_id
+        LEFT JOIN paper_setting ps on ps.id = pur.paper_group_id
+        LEFT JOIN ${dataBase}.sys_examination ex ON ex.id = ps.test_id
+        AND pur.user_id = a.user_id
+        WHERE pur.deleted = 0
+        <if test="entity.paperName != null and entity.paperName != ''">
+
+            and pur.paper_name like concat ('%', #{entity.paperName},'%' )
+        </if>
+        <if test="entity.reviewStatus != null and entity.reviewStatus != ''">
+            and pur.review_status = #{entity.reviewStatus}
+        </if>
+        <if test="entity.createTime != null and entity.createTime != ''">
+            and pur.create_time = #{entity.createTime}
+        </if>
+        GROUP BY pur.user_id,pur.paper_group_id order by pur.create_time desc
+    </select>
+    <select id="getPaperReviewList" resultType="com.cb.signupstage.dto.PaperReviewExportDTO">
+        SELECT
+	pur.id,
+	ps.paper_group_name,
+	pur.paper_name,
+	( CASE pur.review_status WHEN 0 THEN "审核不通过" WHEN 1 THEN "审核通过" WHEN 2 THEN "待审核" ELSE "待审核" END ) AS review_status,
+	pur.create_time,
+	a.submitNum
+FROM
+	( SELECT user_id, max( create_time ) AS create_time, count( 1 ) AS submitNum FROM paper_upload_record GROUP BY user_id ) a
+	LEFT JOIN paper_upload_record pur ON pur.create_time = a.create_time AND pur.user_id = a.user_id
+	LEFT JOIN paper_setting ps ON ps.id = pur.paper_group_id
+        WHERE pur.id in (#{ids})
+    </select>
+
+</mapper>

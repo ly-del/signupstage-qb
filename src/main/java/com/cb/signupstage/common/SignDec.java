@@ -1,5 +1,10 @@
 package com.cb.signupstage.common;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 /**
@@ -7,8 +12,87 @@ import java.math.BigDecimal;
  * @time: 2020/11/13 9:25
  * @description:
  */
+@Data
 public class SignDec {
 
+    public enum deletedType {
+        UN_DELETED(0, "未删除"), DELETED(1, "已删除");
+        private Integer code;
+        private String value;
+
+        deletedType(Integer code, String value) {
+            this.code = code;
+            this.value = value;
+        }
+
+        public Integer getCode() {
+            return code;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+    }
+
+    public enum paperReviewStatus {
+        REVIEW_FAIL(0, "审核不通过"), REVIEW_PAST(1, "审核通过"), REVIEW_PENDING(2, "待审核");
+        private Integer code;
+        private String value;
+
+        paperReviewStatus(Integer code, String value) {
+            this.code = code;
+            this.value = value;
+        }
+
+        public Integer getCode() {
+            return code;
+        }
+
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
+    }
+
+
+    public enum ProfessionalOrSimple {
+        Professional(0, "专业报名"), Simple(1, "简易报名");
+        private Integer code;
+
+        private String value;
+
+        ProfessionalOrSimple(Integer code, String value) {
+            this.code = code;
+            this.value = value;
+        }
+
+        public Integer getCode() {
+            return code;
+        }
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
+
+        /**
+         * 根据code获取去value
+         * @param code
+         * @return
+         */
+       /* public static String getValueByCode(String code){
+            for(ProfessionalOrSimple platformFree:ProfessionalOrSimple.values()){
+                if(code.equals(platformFree.getCode())){
+                    return platformFree.getValue();
+                }
+            }
+            return  null;
+        }*/
+
+    }
+
+
+    //报名模块
     public final static String UNSTARTED_DEC = "报名还未开放，请耐心等待!";
 
     public final static String COMPLETE_DEC = "报名活动已结束，您来晚一步!";
@@ -20,6 +104,7 @@ public class SignDec {
     public final static String SHARE_DEC = "快来注册吧！";
 
     public final static BigDecimal COST = BigDecimal.valueOf(0);
+
 
     public final static Integer MAX_TOTAL = 3000;
 
@@ -44,9 +129,12 @@ public class SignDec {
     //删除状态 可以删除
     public final static Integer DELETED_NO = 1;
 
-    //通用 是否 1是 2否
-    public final static Integer IS_YES = 1;
 
-    public final static Integer IS_NO = 0;
+    //论文分组 考试来源
+    public final static String PROFESSIONAL = "Professional";
+
+    public final static String SIMPLE = "Simple";
+
+    public final static Integer IS_MUST_NO = 0;
 
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cb.signupstage.mapper.PaperUploadRecordMapper">
+
+
+    <select id="queryPaperUploadPage" resultType="com.cb.signupstage.dto.PaperUploadPageDTO">
+	SELECT
+	pur.id,
+	pur.paper_name,
+	 pur.review_status,
+	pur.create_time,
+	pr.review_dec,
+	CONCAT(piur.booked_date," ",piur.start_time,"-",piur.end_time) as reserveTime
+FROM
+	( SELECT b.account_id, MAX( b.create_time ) AS `create_time` FROM paper_upload_record AS b GROUP BY b.account_id ) AS c
+	LEFT JOIN paper_upload_record pur ON pur.account_id = c.account_id AND pur.create_time = c.create_time
+	LEFT JOIN paper_review pr ON pr.paper_id = pur.id
+	LEFT JOIN paper_interview_user_relation piur ON piur.paper_id = pur.id
+	where pur.user_id = #{userId}
+	</select>
+
+    <!--查询考生信息-->
+    <select id="selectInfoById" resultType="com.cb.signupstage.dto.PaperReviewDetailDTO">
+		SELECT
+	pur.id,
+	pur.paper_name,
+	pur.paper_url,
+	pur.paper_group_id,
+	pur.review_status,
+	pur.create_time,
+	pur.user_id,
+	u.userName,
+	ex.examName as testName,
+	ps.paper_group_name
+FROM
+	paper_upload_record pur
+	LEFT JOIN user_info u ON u.id = pur.user_id
+	LEFT JOIN paper_setting ps on ps.id = pur.paper_group_id
+    LEFT JOIN ${dataBase}.sys_examination ex ON ex.id = ps.test_id
+	WHERE pur.id = #{id}
+	</select>
+
+    <select id="selectProfessionalApplyList" resultType="com.cb.signupstage.dto.PaperApplyDTO">
+
+		select id , examName as testName from ${dataBase}.sys_examination
+
+	</select>
+    <select id="selectSimpleApplyList" resultType="com.cb.signupstage.dto.PaperApplyDTO">
+SELECT
+	sign.id,
+	sign.`name` AS testName
+FROM
+	sign_info sign
+WHERE
+	sign.deleted = 0
+	AND sign.is_release = 1
+	</select>
+</mapper>

@@ -14,11 +14,11 @@ public class MpGenerator {
 
     static String packageName = "com.cb.signupstage"; // 当前包名
     static String author = "ly"; // 作者
-    static String sqlUrl = "mysql://192.168.100.66:3306/"; // 数据库类型及地址
+    static String sqlUrl = "mysql://127.0.0.1:3306/"; // 数据库类型及地址
     static String sqlDb = "chamberlaindb"; // 数据库名
-    static String sqlUser = "test";
-    static String sqlPassword = "test";
-    static String table = "sign_info_form"; // 表，用逗号隔开
+    static String sqlUser = "root";
+    static String sqlPassword = "root";
+    static String table = "paper_score_setting"; // 表，用逗号隔开
 
     public static void main(String[] args) {
         // 代码生成器

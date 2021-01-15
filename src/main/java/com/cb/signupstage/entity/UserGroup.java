@@ -1,9 +1,6 @@
 package com.cb.signupstage.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,6 +9,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -30,16 +28,13 @@ public class UserGroup implements Serializable {
     @TableField("parent_id")
     private Long parentId;
 
-    @TableField("create_time")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
-    private Date createTime;
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime createTime;
     @TableField("description")
     private String description;
-    @TableField("status")
-    private Integer status;
-
-
-
+    @TableField(value = "deleted",fill = FieldFill.INSERT)
+    private Integer deleted;
 
 
 }

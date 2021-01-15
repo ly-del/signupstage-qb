@@ -1,10 +1,9 @@
 package com.cb.signupstage.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.TableField;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -65,13 +64,13 @@ public class SignInfoForm implements Serializable {
     /**
      * 状态
      */
-    @TableField("status")
-    private Integer status;
+    @TableField(value = "deleted",fill = FieldFill.INSERT)
+    private Integer deleted;
 
-    @TableField("create_time")
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    @TableField("update_time")
+    @TableField(value="update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
     @TableField("update_user")

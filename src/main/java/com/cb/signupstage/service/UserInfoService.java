@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserInfoService extends IService<UserInfo> {
-    ResultBean saveCustomize(Map<String,String> map,Long accountId);
+
 
     List getCustomizeList(UserCustomize customize);
 
-    int deleteUserCustomize(Long id);
+
 
     ResultBean saveUserInfo(UserInfoPageDTO userInfoDTO, Long accountId);
 

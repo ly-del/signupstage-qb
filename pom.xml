@@ -164,11 +164,18 @@
             <version>2.3.30</version>
         </dependency>
 
+       <!-- <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus</artifactId>
+            <version>3.4.1</version>
+        </dependency>-->
+
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.4.1</version>
         </dependency>
+
 
         <!-- swagger接口依赖-->
         <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->

@@ -83,7 +83,6 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
         signInfo.setFailDec(SignDec.FAIL_DEC);
         signInfo.setShareDec(SignDec.SHARE_DEC);
         signInfo.setIsRelease(SignDec.RELEASE_NOT_RELEASE);
-        signInfo.setStatus(SignDec.STATUS_UN_DELETED);
         int insert = signInfoMapper.insert(signInfo);
         if (insert < 0){
             //失败 return
@@ -149,7 +148,7 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
         signInfoForm.setAccountId(accountId);
         signInfoForm.setCustomizeId(Long.valueOf(1));
         signInfoForm.setSort(1);
-        signInfoForm.setStatus(SignDec.DELETED_NO);
+        signInfoForm.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
         formList.add(signInfoForm);
 
         SignInfoForm signInfoForm2 = new SignInfoForm();
@@ -157,7 +156,7 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
         signInfoForm2.setAccountId(accountId);
         signInfoForm2.setCustomizeId(Long.valueOf(2));
         signInfoForm2.setSort(2);
-        signInfoForm2.setStatus(SignDec.DELETED_NO);
+        signInfoForm2.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
         formList.add(signInfoForm2);
         signInfoFormService.saveBatch(formList);
     }
@@ -167,7 +166,7 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
 
         //先查询所有的  报名基础性信息
         SignInfo signInfo = new SignInfo();
-        signInfo.setStatus(SignDec.STATUS_UN_DELETED);
+        signInfo.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
         QueryWrapper<SignInfo> wrapper = new QueryWrapper<>(signInfo);
         wrapper.orderByDesc("create_time");
         IPage<SignInfoVo> signInfoList = signInfoMapper.selectPageList(page, wrapper);
@@ -195,10 +194,9 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
 
     @Override
     public IPage<UserSearchVo> queryUserSignPage(Page<SignInfo> page, UserSearchVo vo, Long accountId) {
-     //   PageHelper.startPage(page.getPageNum(), page.getPageSize());
+
         //先查询所有的  报名基础性信息
         IPage<UserSearchVo> userSignList = userSignInfoMapper.selectPageList(page,vo,accountId);
-      // List<UserSearchVo> userSignList = userSignInfoMapper.selectPageList(vo,accountId);
 
         return userSignList;
     }

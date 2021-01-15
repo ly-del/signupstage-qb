@@ -1,11 +1,6 @@
 package com.cb.signupstage.entity;
 
-import com.alibaba.excel.metadata.BaseRowModel;
-import com.alibaba.fastjson.annotation.JSONField;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.pagehelper.Page;
@@ -106,8 +101,8 @@ public class SignInfo implements Serializable {
      * 状态(预留)
      */
     @ApiModelProperty(value = "状态")
-    @TableField("status")
-    private Integer status;
+    @TableField(value = "deleted",fill = FieldFill.INSERT)
+    private Integer deleted;
 
     /**
      * 未开始提示语
@@ -192,11 +187,12 @@ public class SignInfo implements Serializable {
     @TableField("image")
     private String image;
 
-    @TableField("create_time")
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private LocalDateTime createTime;
 
-    @TableField("update_time")
+
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private LocalDateTime updateTime;
 

@@ -1,9 +1,6 @@
 package com.cb.signupstage.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,11 +8,14 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
 @TableName("user_sign_info")
-public class UserSignInfo implements Serializable {
+public class
+
+UserSignInfo implements Serializable {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -44,14 +44,14 @@ public class UserSignInfo implements Serializable {
     @TableField("return_time")
     private Date returnTime;
 
-    @TableField("status")
-    private Integer status;
+    @TableField(value = "deleted",fill = FieldFill.INSERT)
+    private Integer deleted;
 
-    @TableField("create_time")
-    private Date createTime;
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
 
-    @TableField("update_time")
-    private Date updateTime;
+    @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 
     private static final long serialVersionUID = 1L;
 

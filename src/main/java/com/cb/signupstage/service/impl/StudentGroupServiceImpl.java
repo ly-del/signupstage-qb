@@ -58,13 +58,11 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
 
         if (!CollectionUtils.isEmpty(selectList)){
             //数据存在 插入失败
-            // TODO 确认
             failMsg = "创建的分组名称已经存在";
         }
         //数据不存在 就插入数据
-        userGroupEntity.setCreateTime(new Date());
         userGroupEntity.setAccountId(accountId);
-        userGroupEntity.setStatus(DBStatusEnum.EFFECT_STATUS.getCode());
+        userGroupEntity.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
         int count = userGroupEntityMapper.insert(userGroupEntity);
         return  failMsg ;
     }
@@ -98,7 +96,6 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         List<UserGroup> selectList = getExistMsg(userGroup, accountId);
 
         if (CollectionUtils.isEmpty(selectList)){
-            // TODO 确认
             failMsg = "数据源不存在";
            return failMsg;
         }
@@ -117,10 +114,9 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
             log.info("======没有用户绑定在该组");
 
             LambdaUpdateWrapper<UserGroup> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.in(UserGroup::getId, list).set(UserGroup::getStatus, SignDec.STATUS_DELETED);
+            lambdaUpdateWrapper.in(UserGroup::getId, list).set(UserGroup::getDeleted, SignDec.deletedType.DELETED.getCode());
 
             userGroupMapper.update(null, lambdaUpdateWrapper);
-            failMsg="删除成功";
             return failMsg;
         }
 
@@ -134,7 +130,7 @@ public class StudentGroupServiceImpl extends ServiceImpl<UserGroupEntityMapper, 
         //查询所有的 分组数据
         UserGroup userGroupEntity =new UserGroup();
 
-        userGroupEntity.setStatus(SignDec.STATUS_UN_DELETED);
+        userGroupEntity.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
         QueryWrapper<UserGroup> wrapper  = new QueryWrapper<>(userGroupEntity) ;
         List<UserGroup> selectList = userGroupEntityMapper.selectList(wrapper);
         List<UserGroupTitleVo> copy = CopyUtils.copy(selectList, UserGroupTitleVo.class);

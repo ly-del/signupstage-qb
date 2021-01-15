@@ -7,7 +7,7 @@
 	f.id,
 	f.sort,
 	  f.customize_id as customizeId,
-	f.status,
+	f.deleted,
 c.`name`,
 f.information,
 c.field

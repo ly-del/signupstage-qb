@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cb.signupstage.mapper.PaperSettingMapper">
+
+    <select id="queryPaperPage" resultType="com.cb.signupstage.dto.PaperSettingPageDTO">
+        SELECT
+        ps.id,
+        ps.test_id,
+        ps.source,
+        IF( ps.source = 0, ex.examName, sign.`name` ) AS testName,
+        ps.paper_group_name,
+        ps.create_time,
+        ps.audit_teacher
+        FROM
+        paper_setting ps
+        LEFT JOIN sign_info sign ON sign.id = ps.test_id
+        LEFT JOIN ${dataBase}.sys_examination ex ON ex.id = ps.test_id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+    <select id="selectPaperSettingDetail" resultType="com.cb.signupstage.dto.PaperSettingDetailDTO">
+        SELECT
+        ps.id,
+        ps.test_id,
+        ps.source,
+        IF( ps.source = 0, ex.examName, sign.`name` ) AS testName,
+        ps.paper_group_name,
+        ps.paper_group_dec,
+        ps.create_time,
+        ps.audit_teacher
+        FROM
+        paper_setting ps
+        LEFT JOIN sign_info sign ON sign.id = ps.test_id
+        LEFT JOIN ${dataBase}.sys_examination ex ON ex.id = ps.test_id
+       where ps.id = #{id}
+    </select>
+
+</mapper>

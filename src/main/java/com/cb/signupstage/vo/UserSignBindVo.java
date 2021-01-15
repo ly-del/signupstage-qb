@@ -1,15 +1,8 @@
 package com.cb.signupstage.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author: ly

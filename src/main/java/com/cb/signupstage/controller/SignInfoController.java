@@ -60,25 +60,27 @@ public class SignInfoController {
 
     @Autowired
     private SignInfoMapper signInfoMapper;
-@Autowired
+    @Autowired
     private UserGroupBindService userGroupBindService;
 
+    @Autowired
+    private UserCustomizeService userCustomizeService;
 
     @ApiOperation(" 复制 一个报名")
     @PostMapping(value = "/copy/info")
-    public ResultBean saveInfo(@RequestBody Map<String,String> map , @RequestHeader Long accountId) {
+    public ResultBean saveInfo(@RequestBody Map<String, String> map, @RequestHeader Long accountId) {
 
         Long id = Long.valueOf(map.get("id"));
         String fsg = signInfoService.saveOrCopy(id, accountId);
         boolean b = StringUtils.isEmpty(fsg);
-        return  ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(b).failMsg(null).build();
+        return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(b).failMsg(null).build();
     }
 
     @ApiOperation(" 新建 一个报名 ")
     @PostMapping(value = "/save/info")
     public ResultBean saveInfo(@RequestBody SignInfo signInfo, @RequestHeader Long accountId) {
 
-        return  signInfoService.saveFirst(signInfo, accountId);
+        return signInfoService.saveFirst(signInfo, accountId);
     }
 
 
@@ -86,23 +88,23 @@ public class SignInfoController {
     @PostMapping(value = "/update/signinfo")
     public ResultBean updateInfo(@RequestBody SignInfoUpdateVo vo, @RequestHeader Long accountId) {
 
-      //  signInfo.setUpdateTime(LocalDateTime.now());
-       //更新 报名基础信息
+        //  signInfo.setUpdateTime(LocalDateTime.now());
+        //更新 报名基础信息
         SignInfo signinfo = CopyUtils.copy(vo, SignInfo.class);
         signInfoService.saveOrUpdate(signinfo);
         //编辑报名需要的表单
-        boolean b = signInfoFormService.batch(vo,accountId);
+        boolean b = signInfoFormService.batch(vo, accountId);
 
         return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(b).failMsg(null).build();
     }
 
     @ApiOperation("删除 报名")
     @PostMapping(value = "delete/signinfo")
-    public ResultBean deleteInfo(@RequestBody Map<String ,Object> map, @RequestHeader Long accountId) {
+    public ResultBean deleteInfo(@RequestBody Map<String, Object> map, @RequestHeader Long accountId) {
         List<Long> ids = (List<Long>) map.get("id");
 
         LambdaUpdateWrapper<SignInfo> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.in(SignInfo::getId, ids).set(SignInfo::getStatus, SignDec.STATUS_DELETED);
+        lambdaUpdateWrapper.in(SignInfo::getId, ids).set(SignInfo::getDeleted, SignDec.deletedType.DELETED.getCode());
         boolean b = signInfoService.update(null, lambdaUpdateWrapper);
 
         return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(b).failMsg(null).build();
@@ -115,33 +117,31 @@ public class SignInfoController {
             @RequestBody SignInfoPageSearchVo vo, @RequestHeader Long accountId) {
         Page<SignInfo> page = new Page<>(vo.getJumpPage(), vo.getPageSize());
         SignInfoPageDTO pagedResult = signInfoService.queryPage(page, accountId);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE,null,true,pagedResult);
+        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pagedResult);
     }
-
 
 
     @ApiOperation("查看报名人数列表")
     @PostMapping(value = "/page/usersignPage")
     public ResultBean<UserSearchVo> usersignPage(@RequestBody UserSearchVo vo, @RequestHeader Long accountId) {
-        if (ObjectUtils.isEmpty(vo.getSignId())){
-            return new ResultBean<>(200,"报名id不能为空",true,null);
+        if (ObjectUtils.isEmpty(vo.getSignId())) {
+            return new ResultBean<>(200, "报名id不能为空", true, null);
         }
 
         Page<SignInfo> page = new Page<>(vo.getJumpPage(), vo.getPageSize());
-        IPage<UserSearchVo> pagedResult = signInfoService.queryUserSignPage(page,vo, accountId);
+        IPage<UserSearchVo> pagedResult = signInfoService.queryUserSignPage(page, vo, accountId);
 
-          return new ResultBean(StatusCode.SUCCESS_CODE,null,true,pagedResult);
+        return new ResultBean(StatusCode.SUCCESS_CODE, null, true, pagedResult);
     }
-
 
 
     @ApiOperation("报名设置 查询 ")
     @PostMapping(value = "/query/infoSetting")
     public ResultBean queryInfoSetting(
-            @RequestBody Map<String,String> map,
+            @RequestBody Map<String, String> map,
             @RequestHeader Long accountId) {
-        Long id =  Long.valueOf(map.get("id"));
-        if(  ObjectUtils.isEmpty( id)){
+        Long id = Long.valueOf(map.get("id"));
+        if (ObjectUtils.isEmpty(id)) {
             return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).build();
         }
 
@@ -149,7 +149,7 @@ public class SignInfoController {
         //基本信息
         SignInfo signInfo = signInfoService.getById(id);
 
-        if (ObjectUtils.isEmpty(signInfo)){
+        if (ObjectUtils.isEmpty(signInfo)) {
             return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.QUERY_NOT_EXIST_DATA).result(false).build();
         }
         //表单信息
@@ -160,7 +160,7 @@ public class SignInfoController {
 
         SignInfoSaveVo signInfoSaveVo = CopyUtils.copy(signInfo, SignInfoSaveVo.class);
         signInfoSaveVo.setFormList(sortList);
-        if (ObjectUtils.isEmpty(sortList)){
+        if (ObjectUtils.isEmpty(sortList)) {
             return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.QUERY_NOT_EXIST_DATA).build();
         }
         return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(true).data(signInfoSaveVo).failMsg(null).build();
@@ -169,37 +169,35 @@ public class SignInfoController {
 
     @ApiOperation("hhhhh")
     @PostMapping(value = "/ex/userToGroup")
-    public void ex(HttpServletResponse response)
-           {
+    public void ex(HttpServletResponse response) {
 
-                 String  fileName = "报名人数报表";
+        String fileName = "报名人数报表";
 
-               // 自定义Excel文件名
-               String excelName = fileName ;
-               UserSignSearchVo vo = new UserSignSearchVo();
-               vo.setSignId(String.valueOf(1));
+        // 自定义Excel文件名
+        String excelName = fileName;
+        UserSignSearchVo vo = new UserSignSearchVo();
+        vo.setSignId(String.valueOf(1));
 
-               List<UserSignSearchVo> pagedResult = signInfoService.querySignPage(vo, Long.valueOf(1));
+        List<UserSignSearchVo> pagedResult = signInfoService.querySignPage(vo, Long.valueOf(1));
 
-               // easyexcel工具类实现Excel文件导出
-               ExcelUtil.writeExcel(response, pagedResult, fileName, excelName, new UserSignSearchVo());
+        // easyexcel工具类实现Excel文件导出
+        ExcelUtil.writeExcel(response, pagedResult, fileName, excelName, new UserSignSearchVo());
 
     }
 
 
-
     @ApiOperation("创建分组")
     @PostMapping(value = "/create/group")
-    public ResultBean createGroup(HttpServletRequest request, @RequestHeader Long accountId, @RequestBody Map<String,String> map
+    public ResultBean createGroup(HttpServletRequest request, @RequestHeader Long accountId, @RequestBody Map<String, String> map
     ) {
         String groupName = map.get("groupName");
         Long parentId = Long.valueOf(map.get("parentId"));
-        log.info("student create group accountId.{} parentId.{}  groupName.{}", accountId, groupName,parentId);
+        log.info("student create group accountId.{} parentId.{}  groupName.{}", accountId, groupName, parentId);
         if (org.springframework.util.ObjectUtils.isEmpty(parentId) || org.springframework.util.ObjectUtils.isEmpty(groupName)) {
             return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.MISSING_PARAMETERS).result(false).build();
         }
-        String failMsg = studentGroupService.createGroup(groupName,parentId, accountId);
-        boolean b =ObjectUtils.isEmpty(failMsg);
+        String failMsg = studentGroupService.createGroup(groupName, parentId, accountId);
+        boolean b = ObjectUtils.isEmpty(failMsg);
         return ResultBean.builder().result(b).failMsg(failMsg).statusCode(StatusCode.SUCCESS_CODE).build();
     }
 
@@ -219,15 +217,18 @@ public class SignInfoController {
 
     @ApiOperation("删除分组")
     @PostMapping(value = "/delete/group")
-    public ResultBean<Object> deleteGroup(HttpServletRequest request, @RequestHeader Long accountId, @RequestBody Map<String,String> map) {
+    public ResultBean<Object> deleteGroup(HttpServletRequest request, @RequestHeader Long accountId, @RequestBody Map<String, String> map) {
 
         Long id = Long.valueOf(map.get("id"));
         log.info("student create group accountId.{} userGroupEntity.{}", accountId, id);
         if (org.springframework.util.ObjectUtils.isEmpty(id)) {
-          new ResultBean<>(200,"id不能为空",true,null);
+            new ResultBean<>(500, "id不能为空", true, null);
         }
-       String msg = studentGroupService.deleteGroup(id, accountId);
-        return   new ResultBean<>(200,msg,true,null);
+        String msg = studentGroupService.deleteGroup(id, accountId);
+        if (!ObjectUtils.isEmpty(msg)){
+          return  ResultBean.failure(msg);
+        }
+        return new ResultBean<>(200, msg, true, null);
     }
 
     @ApiOperation("查询分组信息列表")
@@ -236,7 +237,7 @@ public class SignInfoController {
 
         log.info("student create group accountId.{} userGroupEntity.{}", accountId);
 
-        List<UserGroupDTO> groupList = studentGroupService.queryGroup( accountId);
+        List<UserGroupDTO> groupList = studentGroupService.queryGroup(accountId);
         return ResultBean.builder().data(groupList).result(true).failMsg(null).statusCode(StatusCode.SUCCESS_CODE).build();
     }
 
@@ -250,7 +251,7 @@ public class SignInfoController {
      */
     @ApiOperation("新增 修改 自定义类信息")
     @PostMapping(value = "/save/customize")
-    public ResultBean saveUserCustomize(@RequestBody Map<String,String> map,
+    public ResultBean saveUserCustomize(@RequestBody Map<String, String> map,
                                         @RequestHeader Long accountId) {
 
         String customize = map.get("customize");
@@ -260,7 +261,7 @@ public class SignInfoController {
             return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).build();
         }
 
-        return userInfoService.saveCustomize(map,accountId);
+        return userCustomizeService.saveCustomize(map, accountId);
     }
 
 
@@ -273,9 +274,12 @@ public class SignInfoController {
      */
     @ApiOperation("查询 自定义列表")
     @GetMapping(value = "/query/customize")
-    public ResultBean<List<CustomizeListDTO>> queryUserCustomize(@RequestHeader Long accountId) {
-        List customizeList = userInfoService.getCustomizeList(null);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE,null,true,customizeList);
+    public ResultBean<List<UserCustomize>> queryUserCustomize(@RequestHeader Long accountId) {
+        // List customizeList = userInfoService.getCustomizeList(null);
+        QueryWrapper<UserCustomize> wrapper = new QueryWrapper();
+        wrapper.eq("deleted",0);
+        List<UserCustomize> list = userCustomizeService.list(wrapper);
+        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, list);
     }
 
     /**
@@ -287,25 +291,24 @@ public class SignInfoController {
      */
     @ApiOperation("删除 自定义")
     @PostMapping(value = "/delete/customize")
-    public ResultBean deleteUserCustomize(@RequestBody Map<String,String> map, @RequestHeader Long accountId) {
+    public ResultBean deleteUserCustomize(@RequestBody Map<String, String> map, @RequestHeader Long accountId) {
         Long id = Long.valueOf(map.get("id"));
-        int i = userInfoService.deleteUserCustomize(id);
+        int i = userCustomizeService.deleteUserCustomize(id);
         if (i < 1) {
             return ResultBean.builder().result(false).statusCode(StatusCode.SUCCESS_CODE).failMsg(FailStatusMsg.SYSTEM_EXCEPTION).build();
         }
-       boolean b = false;
+        boolean b = false;
         //先查询 有没有 占用
         QueryWrapper<SignInfoForm> select = new QueryWrapper<SignInfoForm>();
-        select.in("customize_id",id);
+        select.in("customize_id", id);
         List<SignInfoForm> list = signInfoFormService.list(select);
-        b=true;
-        if (list.size()>0){
+        b = true;
+        if (list.size() > 0) {
             QueryWrapper<SignInfoForm> wrapper = new QueryWrapper<SignInfoForm>();
-            wrapper.in("customize_id",id);
+            wrapper.in("customize_id", id);
 
-             b = signInfoFormService.remove(wrapper);
+            b = signInfoFormService.remove(wrapper);
         }
-        //TODO 删除之前已有的 报名
 
         return ResultBean.builder().result(b).data(null).statusCode(StatusCode.SUCCESS_CODE).build();
     }
@@ -313,12 +316,12 @@ public class SignInfoController {
 
     @ApiOperation("移动考生到多个组")
     @PostMapping(value = "/move/userToGroup")
-    public ResultBean queryUserCustomize(@RequestBody Map<String,List<Long>> map,@RequestHeader Long accountId) {
+    public ResultBean queryUserCustomize(@RequestBody Map<String, List<Long>> map, @RequestHeader Long accountId) {
         List<Long> groupIds = map.get("groupIds");
-        List<Long> userIds =  map.get("userIds");
+        List<Long> userIds = map.get("userIds");
         log.info("queryUserCustomize groupIds.{} userIds.{}", groupIds, userIds);
-       userInfoService.moveUserToGroup(groupIds,userIds,accountId);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE,null,true,null);
+        userInfoService.moveUserToGroup(groupIds, userIds, accountId);
+        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, null);
     }
 
   /*  @ApiOperation("单个考生用户移动到组")

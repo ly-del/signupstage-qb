@@ -78,3 +78,7 @@ aes:
   com.cb.signupstage.mapper : debug
 
 
+
+dataBase: flyme_cloud
+
+

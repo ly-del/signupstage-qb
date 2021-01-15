@@ -18,7 +18,7 @@ IF(g.group_name IS NULL,"未分组",g.group_name) as groupName,
 COUNT(bind.id) AS count,
 	SUM(
 		IF (
-			bind.`status` = 1,
+			bind.deleted = 0,
 			bind.cost,
 			0
 		)
@@ -27,7 +27,7 @@ FROM
 	sign_info info
 LEFT JOIN user_sign_info bind ON bind.sign_id = info.id
 LEFT JOIN user_group g on g.id = info.group_id
-where info.`status` = 1
+WHERE info.deleted = 0
 GROUP BY
 	info.id ORDER BY info.create_time DESC
     </select>

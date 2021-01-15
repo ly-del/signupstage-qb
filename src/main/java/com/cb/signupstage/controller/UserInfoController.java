@@ -82,7 +82,7 @@ public class UserInfoController {
         LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(UserGroupBind::getUserId, userId)
                            .in(UserGroupBind::getGroupId,groupIds)
-                .set(UserGroupBind::getStatus, SignDec.STATUS_DELETED);
+                .set(UserGroupBind::getDeleted, SignDec.deletedType.DELETED.getCode());
         userGroupBindService.update(null,lambdaUpdateWrapper);
         return ResultBean.builder().result(true).data(null).statusCode(StatusCode.SUCCESS_CODE).build();
 
@@ -94,7 +94,7 @@ public class UserInfoController {
         List<Long> ids = map.get("ids");
 
         LambdaUpdateWrapper<UserGroupBind> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.in(UserGroupBind::getUserId, ids).set(UserGroupBind::getStatus, SignDec.STATUS_DELETED);
+        lambdaUpdateWrapper.in(UserGroupBind::getUserId, ids).set(UserGroupBind::getDeleted, SignDec.deletedType.DELETED.getCode());
         userGroupBindService.update(null,lambdaUpdateWrapper);
         return ResultBean.builder().result(true).data(null).statusCode(StatusCode.SUCCESS_CODE).build();
 
@@ -107,7 +107,7 @@ public class UserInfoController {
      * @param
      * @return
      */
-    @ApiOperation("用户列表查询")
+    @ApiOperation("考生列表查询")
     @PostMapping(value = "/page/query")
     public ResultBean payPage(@RequestBody UserSelectPageVo vo, @RequestHeader Long accountId) {
 

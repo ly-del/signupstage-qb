@@ -1,14 +1,14 @@
 package com.cb.signupstage.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.TableField;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.bytebuddy.description.field.FieldList;
 
 import java.io.Serializable;
 
@@ -48,21 +48,21 @@ public class UserGroupBind implements Serializable {
     private Long groupId;
 
     /**
-     * 状态 1正常 2删除
+     * 状态 0正常 1删除
      */
-    @TableField("status")
-    private Integer status;
+    @TableField(value = "deleted",fill = FieldFill.INSERT)
+    private Integer deleted;
 
     /**
      * 创建时间
      */
-    @TableField("create_time")
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    @TableField("update_time")
+    @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
 
