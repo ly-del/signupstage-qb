@@ -19,7 +19,7 @@ import java.util.List;
  */
 public interface PaperInterviewSettingService extends IService<PaperInterviewSetting> {
 
-    Page<PaperInterviewSettingPageDTO> queryInterviewSettingPage(Page page , PaperInterviewSettingSearchVo paperInterviewSettingSearchVo);
+    Page<PaperInterviewSettingPageDTO> queryInterviewSettingPage(Page page , PaperInterviewSettingSearchVo paperInterviewSettingSearchVo,String dataBase);
 
     List<PaperInterviewSettingExportDTO> exportInterviewSettingList(String ids);
 

@@ -2,4 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cb.signupstage.mapper.PaperScoreSettingMapper">
 
+    <select id="getPassScorePage" resultType="com.cb.signupstage.dto.PaperScoreSettingPageDTO">
+           SELECT
+	pcs.id,
+	pcs.score,
+	pcs.create_time,
+	pcs.source,
+IF
+	( pcs.source = 0, ex.examName, sign.`name` ) AS testName
+FROM
+	paper_score_setting pcs
+	LEFT JOIN ${dataBase}.sys_examination ex ON ex.id = pcs.test_id
+	LEFT JOIN sign_info sign ON sign.id = pcs.test_id
+	<where>
+		<if test="entity.testName != null and entity.testName != ''">
+			and ( ex.examName like concat ('%',#{entity.testName},'%')
+			or sign.name like concat ('%',#{entity.testName},'%'))
+		</if>
+	</where>
+    </select>
 </mapper>

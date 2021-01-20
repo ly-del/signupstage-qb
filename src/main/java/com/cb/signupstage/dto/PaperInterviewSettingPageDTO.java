@@ -43,6 +43,6 @@ public class PaperInterviewSettingPageDTO {
     private String interviewResult;
 
     @ApiModelProperty(value = "答辩时间")
-    private String interviewTime;
+    private String reverseTime;
 
 }

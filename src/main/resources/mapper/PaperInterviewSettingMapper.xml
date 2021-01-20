@@ -25,7 +25,8 @@
         END
         ) AS interviewResult,
         GROUP_CONCAT( pis.score SEPARATOR '/' ) as scoreString,
-        CONCAT(piur.start_time,piur.end_time) as reverseTime
+        CONCAT(piur.start_time,'-',piur.end_time) as reverseTime,
+        ex.examName as testName
         FROM
         ( SELECT * FROM paper_upload_record ORDER BY create_time ) pur
         LEFT JOIN paper_setting ps ON ps.id = pur.paper_group_id
@@ -33,11 +34,13 @@
         LEFT JOIN paper_interview_user_relation piur ON piur.paper_id = pur.id
         LEFT JOIN paper_score_setting pcs on pcs.test_id=ps.test_id
         LEFT JOIN user_info u on u.id = pur.user_id
+        LEFT JOIN sign_info sign on sign.id = ps.test_id
+        LEFT JOIN ${dataBase}.sys_examination ex ON ex.id = ps.test_id
         WHERE
         pur.review_status = 1
 
         <if test="entity.paperName != null and entity.paperName != ''">
-            and ps.paper_name like concat ('%',#{entity.paperName,jdbcType=VARCHAR},'%')
+            and pur.paper_name like concat ('%',#{entity.paperName,jdbcType=VARCHAR},'%')
         </if>
         <if test="entity.interviewResult != null and entity.interviewResult != ''">
             <if test="entity.interviewResult == 1">
@@ -53,6 +56,10 @@
         <if test="entity.userName != null and entity.userName != ''">
             and u.userName like concat ('%',#{entity.userName},'%')
         </if>
+        <if test="entity.testName != null and entity.testName != ''">
+            and ( ex.examName like concat ('%',#{entity.testName},'%')
+            or sign.name like concat ('%',#{entity.testName},'%'))
+        </if>
         GROUP BY pur.paper_group_id,pur.user_id
     </select>
     <select id="exportInterviewSettingList" resultType="com.cb.signupstage.dto.PaperInterviewSettingExportDTO">
@@ -61,7 +68,7 @@
 	ps.paper_group_name,
 	pur.paper_name,
 	pur.create_time,
-  pur.score,
+    pur.score,
   (
 		CASE
 		WHEN pur.score IS NOT NULL

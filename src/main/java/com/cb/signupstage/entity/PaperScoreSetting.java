@@ -37,6 +37,9 @@ public class PaperScoreSetting implements Serializable {
     @TableField("score")
     private Integer score;
 
+    @TableField("source")
+    private Integer source;
+
     /**
      * 删除标识
      */

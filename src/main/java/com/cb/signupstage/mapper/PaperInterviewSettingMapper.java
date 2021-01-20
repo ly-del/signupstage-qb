@@ -25,7 +25,7 @@ import java.util.List;
 public interface PaperInterviewSettingMapper extends BaseMapper<PaperInterviewSetting> {
 
 
-    Page<PaperInterviewSettingPageDTO> queryInterviewSettingPage(Page page, @Param("entity") PaperInterviewSettingSearchVo paperInterviewSettingSearchVo);
+    Page<PaperInterviewSettingPageDTO> queryInterviewSettingPage(Page page, @Param("entity") PaperInterviewSettingSearchVo paperInterviewSettingSearchVo,@Param("dataBase") String dataBase);
 
     List<PaperInterviewSettingExportDTO> exportInterviewSettingList(@Param("ids") String ids);
 

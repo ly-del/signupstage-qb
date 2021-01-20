@@ -29,8 +29,8 @@ public class PaperInterviewSettingServiceImpl extends ServiceImpl<PaperInterview
     private PaperInterviewSettingMapper paperInterviewSettingMapper;
 
     @Override
-    public Page<PaperInterviewSettingPageDTO> queryInterviewSettingPage(Page page, PaperInterviewSettingSearchVo paperInterviewSettingSearchVo) {
-        Page<PaperInterviewSettingPageDTO> dto =  paperInterviewSettingMapper.queryInterviewSettingPage(page,paperInterviewSettingSearchVo);
+    public Page<PaperInterviewSettingPageDTO> queryInterviewSettingPage(Page page, PaperInterviewSettingSearchVo paperInterviewSettingSearchVo,String dataBase) {
+        Page<PaperInterviewSettingPageDTO> dto =  paperInterviewSettingMapper.queryInterviewSettingPage(page,paperInterviewSettingSearchVo,dataBase);
         return dto;
     }
 

@@ -70,7 +70,6 @@ public class PaperSettingController {
     private String dataBase;
 
 
-
     @ApiOperation("添加/修改 论文分组")
     @PostMapping("/save/editPaperSetting")
     public ResultBean save(@RequestBody PaperSetting paperSetting, @RequestHeader Long accountId) {
@@ -121,18 +120,18 @@ public class PaperSettingController {
             @RequestBody PaperSettingPageSearchVo vo, @RequestHeader Long accountId) {
 
 
-        Page<T> pagebean = paperSettingService.queryPaperPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo,dataBase);
+        Page<T> pagebean = paperSettingService.queryPaperPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo, dataBase);
         return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pagebean);
     }
 
     @ApiOperation("论文分组详情")
     @PostMapping(value = "/query/queryPaperSettingDetail")
     public ResultBean queryPaperSettingDetail(
-            @RequestBody  Map<String,String> map ) {
+            @RequestBody Map<String, String> map) {
         String id = map.get("id");
 
-        PaperSettingDetailDTO detail =  paperSettingService.queryPaperSettingDetail(id,dataBase);
-        return ResultBean.success(detail,null);
+        PaperSettingDetailDTO detail = paperSettingService.queryPaperSettingDetail(id, dataBase);
+        return ResultBean.success(detail, null);
     }
 
     @ApiOperation("查询论文分组list")
@@ -150,7 +149,7 @@ public class PaperSettingController {
     public ResultBean queryPaperReviewPage(
             @RequestBody PaperSettingPageSearchVo vo, @RequestHeader Long accountId) {
 
-        Page<PaperReviewPageDTO> pagebean = paperReviewService.queryPaperReviewPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo,dataBase);
+        Page<PaperReviewPageDTO> pagebean = paperReviewService.queryPaperReviewPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo, dataBase);
         return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pagebean);
     }
 
@@ -240,7 +239,7 @@ public class PaperSettingController {
     @PostMapping(value = "/query/paperReviewDetail")
     public ResultBean getPaperReviewDetail(@RequestBody PaperReview paperReview, @RequestHeader Long accountId) {
 
-        PaperReviewDetailDTO detailDTO = paperReviewService.getPaperReviewDetail(paperReview.getId(),dataBase);
+        PaperReviewDetailDTO detailDTO = paperReviewService.getPaperReviewDetail(paperReview.getId(), dataBase);
         return ResultBean.success(detailDTO, null);
     }
 
@@ -350,7 +349,7 @@ public class PaperSettingController {
         if (ObjectUtils.isEmpty(id)) {
             return ResultBean.failure("论文记录不存在");
         }
-        PaperScheduleInterviewDTO dto = paperInterviewUserRelationService.queryScheduleInterview(id,dataBase);
+        PaperScheduleInterviewDTO dto = paperInterviewUserRelationService.queryScheduleInterview(id, dataBase);
 
         return new ResultBean(200, null, true, dto);
     }
@@ -425,18 +424,33 @@ public class PaperSettingController {
     @ApiOperation("面试管理 分页列表")
     @PostMapping("/query/interviewSettingPage")
     public ResultBean queryInterviewSettingPage(@RequestBody PaperInterviewSettingSearchVo paperInterviewSettingSearchVo, @RequestHeader Long accountId) {
-        Page<PaperInterviewSettingPageDTO> dto = paperInterviewSettingService.queryInterviewSettingPage(new Page<>(paperInterviewSettingSearchVo.getJumpPage(), paperInterviewSettingSearchVo.getPageSize()), paperInterviewSettingSearchVo);
+        Page<PaperInterviewSettingPageDTO> dto = paperInterviewSettingService.queryInterviewSettingPage(new Page<>(paperInterviewSettingSearchVo.getJumpPage(), paperInterviewSettingSearchVo.getPageSize()), paperInterviewSettingSearchVo, dataBase);
         return ResultBean.success(dto, null);
     }
 
     @ApiOperation("设置及格分数")
-    @PostMapping("/save/passScore")
+    @PostMapping("/save/setPassScore")
     public ResultBean savePassScore(@RequestBody PaperScoreSetting paperScoreSetting, @RequestHeader Long accountId) {
         log.info("paperScoreSetting entity.{}", paperScoreSetting);
-        if (ObjectUtils.isEmpty(paperScoreSetting.getTestId())) {
-            return ResultBean.failure("考试id不能为空");
+        if (ObjectUtils.isEmpty(paperScoreSetting.getTestId()) || ObjectUtils.isEmpty(paperScoreSetting.getSource())) {
+            return ResultBean.failure("考试id或者报名来源不能为空");
+        }
+        boolean isExist = paperScoreSettingService.checkIsExist(paperScoreSetting);
+        if (!isExist) {
+            return ResultBean.failure("当前考试及格分数已设置，请勿重复提交");
         }
         boolean b = paperScoreSettingService.save(paperScoreSetting);
+        return new ResultBean(200, null, b, null);
+    }
+
+    @ApiOperation("编辑及格分数")
+    @PostMapping("/save/updatePassScore")
+    public ResultBean updatePassScore(@RequestBody PaperScoreSetting paperScoreSetting, @RequestHeader Long accountId) {
+        log.info("paperScoreSetting entity.{}", paperScoreSetting);
+        if (ObjectUtils.isEmpty(paperScoreSetting.getId()) || ObjectUtils.isEmpty(paperScoreSetting.getScore())) {
+            return ResultBean.failure("id或者分数不能为空");
+        }
+        boolean b = paperScoreSettingService.updateById(paperScoreSetting);
         return new ResultBean(200, null, b, null);
     }
 
@@ -469,23 +483,26 @@ public class PaperSettingController {
 
     @ApiOperation("查询专业版/简易版报名列表")
     @PostMapping(value = "/query/queryTestList")
-    public ResultBean queryProfessionaplSignUpList(HttpServletResponse response,@RequestBody Map<String,String> map) {
+    public ResultBean queryProfessionaplSignUpList(HttpServletResponse response, @RequestBody Map<String, String> map) {
         Integer source = Integer.valueOf(map.get("source"));
         List<PaperApplyDTO> applyDTOList = new ArrayList<>();
-if (source==0){
-    applyDTOList =  paperUploadRecordService.getProfessionalApplyList();
-}else {
-    applyDTOList = paperUploadRecordService.getSimpleApplyList();
-}
+        if (source == 0) {
+            applyDTOList = paperUploadRecordService.getProfessionalApplyList();
+        } else {
+            applyDTOList = paperUploadRecordService.getSimpleApplyList();
+        }
         return ResultBean.success(applyDTOList, null);
 
     }
 
 
+    @ApiOperation("及格分数分页列表")
+    @PostMapping(value = "/query/queryPassScorePage")
+    public ResultBean queryPassScorePage(HttpServletResponse response, @RequestBody PaperScoreSettingPageDTO paperScoreSettingPageDTO) {
+        Page<PaperScoreSettingPageDTO> pageBean = paperScoreSettingService.queryPassScorePage(new Page<>(paperScoreSettingPageDTO.getJumpPage(), paperScoreSettingPageDTO.getPageSize()), paperScoreSettingPageDTO, dataBase);
+        return ResultBean.success(pageBean, null);
 
-
-
-
+    }
 
 }
 

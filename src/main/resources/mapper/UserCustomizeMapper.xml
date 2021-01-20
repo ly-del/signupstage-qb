@@ -7,7 +7,7 @@
     select
     id, name, type,status,is_must as isMust ,field
     from user_customize
-    <where> status = 1
+    <where> deleted = 0
     <if test="name != null and name != ''">
      and name = #{name,jdbcType=VARCHAR}
     </if>

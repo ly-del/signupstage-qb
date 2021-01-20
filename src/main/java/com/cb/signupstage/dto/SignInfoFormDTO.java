@@ -31,7 +31,7 @@ public class SignInfoFormDTO {
 
    private String name;
 
-   private String status;
+   private Integer deleted;
 
    private Long customizeId;
 
