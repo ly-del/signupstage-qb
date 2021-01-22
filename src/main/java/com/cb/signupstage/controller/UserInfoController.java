@@ -122,6 +122,9 @@ public class UserInfoController {
     @PostMapping(value = "/bind/info")
     public ResultBean userInfoBind(@RequestBody UserSignBindVo vo, @RequestHeader Long accountId) {
         log.info("vo.{}", vo);
+        if (ObjectUtils.isEmpty(vo.getUserName()) || ObjectUtils.isEmpty(vo.getMobile())){
+            return ResultBean.failure("姓名或手机号不能为空");
+        }
         return  userInfoService.userInfoBind(vo, accountId);
 
     }

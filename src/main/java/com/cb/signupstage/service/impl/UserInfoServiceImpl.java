@@ -291,7 +291,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         List<UserSignInfo> bindList = userSignInfoMapper.getExist(vo);
         if (bindList.size() > 0) {
             //已经存在当前报名的 报名信息记录 不能重复报名
-            return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("不能重复报名").build();
+            return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg(null).build();
         }
         //创建报名信息
         //先创建用户信息 存在就不创建
@@ -327,12 +327,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userSignInfoMapper.insert(userSignInfo);
 
         //绑定 用户 和分组的关系
-        UserGroupBind userGroupBind = new UserGroupBind();
-        userGroupBind.setUserId(userId);
-        userGroupBind.setGroupId(signInfos.get(0).getGroupId());
-        userGroupBind.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
-        userGroupBind.setAccountId(accountId);
-        userGroupBindMapper.insert(userGroupBind);
+        //先查询是否存在绑定关系
+        QueryWrapper<UserGroupBind> bindWrapper = new QueryWrapper();
+        bindWrapper.eq("user_id",userId).eq("group_id",signInfos.get(0).getGroupId());
+        List<UserGroupBind> userGroupBinds = userGroupBindMapper.selectList(bindWrapper);
+        if (userGroupBinds.size()==0) {
+            UserGroupBind userGroupBind = new UserGroupBind();
+            userGroupBind.setUserId(userId);
+            userGroupBind.setGroupId(signInfos.get(0).getGroupId());
+            userGroupBind.setDeleted(SignDec.deletedType.UN_DELETED.getCode());
+            userGroupBind.setAccountId(accountId);
+            userGroupBindMapper.insert(userGroupBind);
+        }
         return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).build();
 
 

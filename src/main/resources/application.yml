@@ -2,6 +2,6 @@
 spring:
   profiles:
     #配置文件的切换
-    active: dev
+    active: product
 
 

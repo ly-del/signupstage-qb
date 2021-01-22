@@ -1,7 +1,7 @@
 #线上环境使用的配置文件
 
 server:
-  port: 80
+  port: 8082
   servlet:
     context-path: /bpi
 
@@ -14,9 +14,9 @@ spring:
       max-request-size=20Mb
   #数据库配置
   datasource:
-    url: jdbc:mysql://localhost:3306/chamberlaindb?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3300/chamberlaindb?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
-    password: hekang
+    password: 123456
     driver-class-name: com.mysql.jdbc.Driver
 
   cache:
@@ -71,11 +71,16 @@ aes:
   key: aaDJL2d9DfhLZO0z
   iv: 412ADDSSFA342442
 
-
   #log
   logging:
   level:
-  com.cb.signupstage.mapper : debug
+  com.cb.signupstage.mapper: debug
+
+mybatis-plus:
+  type-handlers-package: com.cb.signupstage.common
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
 
 
 

@@ -14,9 +14,10 @@ import java.time.LocalDateTime;
 @Data
 public class PaperUploadPageDTO {
     private Long id;
-    private String paperGroupName;
+    private String paperName;
 
     private SignDec.paperReviewStatus reviewStatus;
+    private Integer reviewStatusCode;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private LocalDateTime createTime;

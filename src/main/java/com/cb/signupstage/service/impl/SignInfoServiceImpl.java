@@ -108,15 +108,26 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
 
 
     @Override
-    public String saveOrCopy(Long id ,Long accountId) {
+    public String saveOrCopy(Long id ,String name,Long accountId) {
 
         //存在 就 复制 一个新的
         //先查找 已存在的报告的信息
         SignInfo info = signInfoMapper.selectById(id);
+        if (ObjectUtils.isEmpty(info)){
+            return "报名信息为空，复制失败";
+        }
+        //判断 新加的名字 是否已存在
+        QueryWrapper selectWrapper = new QueryWrapper();
+        selectWrapper.eq("name",name);
+        selectWrapper.eq("deleted",0);
+        List list = signInfoMapper.selectList(selectWrapper);
+        if (list.size() > 0){
+            return "报名标题已存在,不能重复";
+        }
 
         SignInfo copy = CopyUtils.copy(info, SignInfo.class);
         copy.setId(null);
-        copy.setName(copy.getName()+"(副本)");
+        copy.setName(name);
         copy.setCreateTime(LocalDateTime.now());
         copy.setUpdateTime(LocalDateTime.now());
         signInfoMapper.insert(copy);

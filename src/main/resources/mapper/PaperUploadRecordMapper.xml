@@ -8,12 +8,13 @@
 	pur.id,
 	pur.paper_name,
 	 pur.review_status,
+	 pur.review_status as reviewStatusCode,
 	pur.create_time,
 	pr.review_dec,
 	CONCAT(piur.booked_date," ",piur.start_time,"-",piur.end_time) as reserveTime
 FROM
-	( SELECT b.account_id, MAX( b.create_time ) AS `create_time` FROM paper_upload_record AS b GROUP BY b.account_id ) AS c
-	LEFT JOIN paper_upload_record pur ON pur.account_id = c.account_id AND pur.create_time = c.create_time
+	( SELECT b.user_id, MAX( b.create_time ) AS `create_time` FROM paper_upload_record  b GROUP BY b.user_id ) AS c
+	LEFT JOIN paper_upload_record pur ON pur.user_id = c.user_id AND pur.create_time = c.create_time
 	LEFT JOIN paper_review pr ON pr.paper_id = pur.id
 	LEFT JOIN paper_interview_user_relation piur ON piur.paper_id = pur.id
 	where pur.user_id = #{userId}

@@ -71,9 +71,10 @@ public class SignInfoController {
     public ResultBean saveInfo(@RequestBody Map<String, String> map, @RequestHeader Long accountId) {
 
         Long id = Long.valueOf(map.get("id"));
-        String fsg = signInfoService.saveOrCopy(id, accountId);
+        String name = map.get("name");
+        String fsg = signInfoService.saveOrCopy(id,name, accountId);
         boolean b = StringUtils.isEmpty(fsg);
-        return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(b).failMsg(null).build();
+        return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(b).failMsg(fsg).build();
     }
 
     @ApiOperation(" 新建 一个报名 ")

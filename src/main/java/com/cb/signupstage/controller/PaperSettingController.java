@@ -30,6 +30,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -136,10 +137,15 @@ public class PaperSettingController {
 
     @ApiOperation("查询论文分组list")
     @PostMapping(value = "/query/paperSettingList")
-    public ResultBean queryPaperSettingList(
+    public ResultBean queryPaperSettingList(@RequestBody Map<String,String> map,
             @RequestHeader Long accountId) {
-        QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("deleted", SignDec.deletedType.UN_DELETED.getCode());
+        if (ObjectUtils.isEmpty(map.get("source"))){
+            return ResultBean.failure("报名来源不能为空");
+        }
+        Long source = Long.valueOf(map.get("source"));
+        QueryWrapper<PaperSetting> wrapper = new QueryWrapper();
+        wrapper.eq("deleted", SignDec.deletedType.UN_DELETED.getCode())
+        .eq("source",source);
         List list = paperSettingService.list(wrapper);
         return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, list);
     }
@@ -172,16 +178,16 @@ public class PaperSettingController {
 
     @ApiOperation("我的论文分页列表")
     @PostMapping("/query/paperUploadPage")
-    public ResultBean queryPaperUploadPage(@RequestBody Map<String, Integer> map, @RequestHeader Long userId) {
+    public ResultBean queryPaperUploadPage(@RequestBody Map<String, Integer> map, @RequestHeader Long accountId) {
 
         Page<PaperUploadPageDTO> pageBean = paperUploadRecordService.
-                queryPaperUploadPage(new Page<>(map.get("jumpPage"), map.get("pageSize")), userId);
+                queryPaperUploadPage(new Page<>(map.get("jumpPage"), map.get("pageSize")), accountId);
         return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pageBean);
     }
 
 
     @ApiOperation("单个论文审核")
-    @PostMapping(value = "/review/paper")
+    @PostMapping(value = "/review/onePaper")
     public ResultBean reviewPaper(@RequestBody PaperReview paperReview, @RequestHeader Long accountId) {
 
         boolean b = paperReviewService.saveOrUpdate(paperReview);
@@ -197,25 +203,27 @@ public class PaperSettingController {
 
     @ApiOperation("批量论文审核")
     @PostMapping(value = "/review/paperBanth")
-    public ResultBean reviewPaper(@RequestBody Map<String, String> map, @RequestHeader Long accountId) {
+    public ResultBean reviewPaper(@RequestBody Map<String, Object> map, @RequestHeader Long accountId) {
 
-        String ids = map.get("ids");
-        String reviewStatus = map.get("reviewStatus");
-
+        List<Map<String,String>> listMaps = (List<Map<String,String>>) map.get("ids");
+        Integer reviewStatus = (Integer) map.get("reviewStatus");
+        List<String> idStr = listMaps.stream().map(p -> p.get("id")).collect(Collectors.toList());
+        List<Long> idLong = idStr.stream().map(p -> Long.parseLong(p)).collect(Collectors.toList());
         LambdaUpdateWrapper<PaperUploadRecord> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.in(PaperUploadRecord::getId, ids).set(PaperUploadRecord::getReviewStatus, reviewStatus);
+        lambdaUpdateWrapper.in(PaperUploadRecord::getId, idLong).set(PaperUploadRecord::getReviewStatus, reviewStatus);
         boolean b = paperUploadRecordService.update(null, lambdaUpdateWrapper);
         boolean result = false;
         if (b) {
-            String[] split = ids.split(",");
-
-            List<Long> collect = Arrays.stream(split)
-                    .map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
+//            String[] split = ids.split(",");
+//
+//            List<Long> collect = Arrays.stream(split)
+//                    .map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
             List<PaperReview> saveList = new ArrayList<>();
-            for (Long aLong : collect) {
+            for (Map<String,String> idMap : listMaps) {
                 PaperReview paperReview = new PaperReview();
-                paperReview.setPaperId(aLong);
-                paperReview.setReviewStatus(SignDec.paperReviewStatus.valueOf(reviewStatus));
+                paperReview.setPaperId(Long.valueOf(idMap.get("id")));
+                paperReview.setUserId(Long.valueOf(idMap.get("userId")));
+                paperReview.setReviewStatus(SignDec.paperReviewStatus.values()[reviewStatus]);
                 saveList.add(paperReview);
             }
             if (reviewStatus.equals(1)) {
@@ -290,11 +298,12 @@ public class PaperSettingController {
 
         }
         //编辑
-        if (paperInterviewSetting.getId() != list.get(0).getId()) {
-            //该分组的预约时间段 已经存在 不能重复添加
-            return ResultBean.failure("该分组的 预约时间段已经存在 ,不能重复编辑");
+        if (list.size()>0) {
+            if (paperInterviewSetting.getId() != list.get(0).getId()) {
+                //该分组的预约时间段 已经存在 不能重复添加
+                return ResultBean.failure("该分组的 预约时间段已经存在 ,不能重复编辑");
+            }
         }
-
         boolean b = paperInterviewSettingService.saveOrUpdate(paperInterviewSetting);
 
         return new ResultBean(200, null, b, null);
@@ -320,14 +329,16 @@ public class PaperSettingController {
     @ApiOperation("预约时间设置 分页列表")
     @PostMapping(value = "/query/interviewSettingList")
     public ResultBean queryInterviewSettingList(@RequestBody Map<String, Integer> map, @RequestHeader Long accountId) {
-        Page<PaperInterviewSetting> page = paperInterviewSettingService.page(new Page<>(map.get("jumpPage"), map.get("pageSize")));
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("paper_group_id",map.get("id"));
+        Page<PaperInterviewSetting> page = paperInterviewSettingService.page(new Page<>(map.get("jumpPage"), map.get("pageSize")),wrapper);
 
         return new ResultBean(200, null, true, page);
     }
 
     @ApiOperation("上传论文")
-    @PostMapping(value = "/save/paperUploadRecord")
-    public ResultBean savePaperUploadRecord(@RequestBody PaperUploadRecord paperUploadRecord, @RequestHeader Long accountId) {
+    @PostMapping(value = "/save/paperUpload")
+    public ResultBean savePaperUpload(@RequestBody PaperUploadRecord paperUploadRecord, @RequestHeader Long accountId) {
         log.info("paper save paperUploadRecord entity.{}", paperUploadRecord);
         //论文分组不能为空
         if (ObjectUtils.isEmpty(paperUploadRecord.getPaperGroupId())) {
@@ -501,6 +512,16 @@ public class PaperSettingController {
     public ResultBean queryPassScorePage(HttpServletResponse response, @RequestBody PaperScoreSettingPageDTO paperScoreSettingPageDTO) {
         Page<PaperScoreSettingPageDTO> pageBean = paperScoreSettingService.queryPassScorePage(new Page<>(paperScoreSettingPageDTO.getJumpPage(), paperScoreSettingPageDTO.getPageSize()), paperScoreSettingPageDTO, dataBase);
         return ResultBean.success(pageBean, null);
+
+    }
+
+
+    @ApiOperation("预约时间详情")
+    @PostMapping(value = "/query/queryReservationTimeDetail")
+    public ResultBean queryReservationTimeDetail(HttpServletResponse response, @RequestBody Map<String,String> map) {
+       Long id = Long.valueOf(map.get("id"));
+        PaperInterviewSetting bean  = paperInterviewSettingService.getById(id);
+        return ResultBean.success(bean, null);
 
     }
 

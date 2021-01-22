@@ -12,6 +12,7 @@
         pur.review_status,
         pur.create_time,
         u.userName,
+        u.id as userId,
         a.submitNum,
         ex.examName as testName
         FROM

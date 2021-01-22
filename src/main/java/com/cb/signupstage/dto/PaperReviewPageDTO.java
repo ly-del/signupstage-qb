@@ -42,4 +42,7 @@ public class PaperReviewPageDTO {
 
     @ApiModelProperty(value = "审核时间")
     private String createTime;
+
+    @ApiModelProperty(value = "考生id")
+    private Long userId;
 }

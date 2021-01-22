@@ -26,7 +26,7 @@ public interface SignInfoService extends IService<SignInfo> {
      * 新增 和 复制 一个报名
      * @param vo
      */
-    String saveOrCopy(Long id, Long accountId);
+    String saveOrCopy(Long id, String name ,Long accountId);
 
 
     /**
