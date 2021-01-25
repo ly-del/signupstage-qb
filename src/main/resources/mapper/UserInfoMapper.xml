@@ -1,74 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cb.signupstage.mapper.UserInfoMapper">
-  <!--条件查询-->
-  <select id="selectBySelect" resultType="com.cb.signupstage.entity.UserInfo">
-    select username,mobile,idcard
-    from user_info
-    <where> status = 1
-      <if test="mobile != null and mobile != ''">
-       and  mobile = #{mobile,jdbcType=VARCHAR}
-      </if>
-    </where>
-  </select>
+    <!--条件查询-->
+    <select id="selectBySelect" resultType="com.cb.signupstage.entity.UserInfo">
+        select username,mobile,idcard
+        from user_info
+        <where>status = 1
+            <if test="mobile != null and mobile != ''">
+                and mobile = #{mobile,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
 
-  <!--查询用户分页列表-->
-  <select id="pageQuery" resultType="com.cb.signupstage.dto.UserInfoPageDTO">
-    select
-    info.id,
-    info.userName,
-    info.face_url,
-    info.sex,
-    info.mobile,
-    info.idCard,
-    info.deptId,
-    info.deptName,
-    info.positionName,
-    GROUP_CONCAT(g.group_name) as groupName,
-    GROUP_CONCAT(g.id) as groupId
+    <!--查询用户分页列表-->
+    <select id="pageQuery" resultType="com.cb.signupstage.dto.UserInfoPageDTO">
+        select
+        info.id,
+        info.userName,
+        info.face_url,
+        info.sex,
+        info.mobile,
+        info.idCard,
+        info.deptId,
+        info.deptName,
+        info.positionName,
+        GROUP_CONCAT(g.group_name) as groupName,
+        GROUP_CONCAT(g.id) as groupId
 
-    from user_group_bind gb
-    LEFT JOIN user_info info on  info.id =  gb.user_id
-    LEFT JOIN user_group g on g.id = gb.group_id
+        from user_group_bind gb
+        LEFT JOIN user_info info on info.id = gb.user_id
+        LEFT JOIN user_group g on g.id = gb.group_id
 
-    where g.`deleted` = 0 and gb.`deleted` = 0
-    <if test="entity.sex != null and entity.sex != ''">
-      and info.sex = #{entity.sex}
-    </if>
-    <if test="entity.userName != null and entity.userName != ''">
-      and info.userName like concat ('%',#{entity.userName},'%')
-    </if>
-    <if test="entity.mobile != null and entity.mobile != ''">
-      and info.mobile like  concat (#{entity.mobile},'%')
-    </if>
-    <if test="entity.positionName != null and entity.positionName != ''">
-      and info.positionName = #{entity.positionName}
-    </if>
-    <if test="entity.idCard != null and entity.idCard != ''">
-      and info.idCard like    concat( #{entity.idCard} , '%')
-    </if>
-    <if test="entity.groupId != null and entity.groupId != ''">
-      and g.id in (#{entity.groupId})
-    </if>
-    GROUP BY user_id order by info.createTime desc
-  </select>
-  <select id="getById" resultType="com.cb.signupstage.dto.UserInfoPageDTO">
-    select
-    info.id,
-    info.userName,
-    info.avatar,
-    info.sex,
-    info.mobile,
-    info.idCard,
-    info.deptId,
-    info.deptName,
-    info.positionName,
-    g.group_name as groupName
+        where g.deleted = 0 and gb.deleted = 0 and info.status = 1
+        <if test="entity.sex != null and entity.sex != ''">
+            and info.sex = #{entity.sex}
+        </if>
+        <if test="entity.userName != null and entity.userName != ''">
+            and info.userName like concat ('%',#{entity.userName},'%')
+        </if>
+        <if test="entity.mobile != null and entity.mobile != ''">
+            and info.mobile like concat (#{entity.mobile},'%')
+        </if>
+        <if test="entity.positionName != null and entity.positionName != ''">
+            and info.positionName = #{entity.positionName}
+        </if>
+        <if test="entity.idCard != null and entity.idCard != ''">
+            and info.idCard like concat( #{entity.idCard} , '%')
+        </if>
+        <if test="entity.groupId != null and entity.groupId != ''">
+            and (g.id in (#{entity.groupId}) or g.id in (select GROUP_CONCAT(id) from (
 
-    from user_info info
-    LEFT JOIN user_group_bind gb on gb.user_id = info.id
-    LEFT JOIN user_group g on g.id = gb.group_id
+            select t1.id,
 
-    where g.`deleted` = 0 and info.`status` = 1 and info.id = #{id}
-  </select>
+            if(find_in_set(parent_id, @pids) > 0, @pids := concat(@pids, ',', id), 0) as ischild
+
+            from (
+
+            select id,parent_id from user_group t where t.deleted = 0 order by parent_id, id
+
+            ) t1,
+
+            (select @pids := #{entity.groupId}) t2
+
+            ) t3 where ischild != 0))
+        </if>
+        GROUP BY gb.user_id order by info.createTime desc
+    </select>
+    <select id="getById" resultType="com.cb.signupstage.dto.UserInfoPageDTO">
+        select info.id,
+               info.userName,
+               info.avatar,
+               info.sex,
+               info.mobile,
+               info.idCard,
+               info.deptId,
+               info.deptName,
+               info.positionName,
+               g.group_name as groupName
+
+        from user_info info
+                 LEFT JOIN user_group_bind gb on gb.user_id = info.id
+                 LEFT JOIN user_group g on g.id = gb.group_id
+
+        where g.`deleted` = 0
+          and info.`status` = 1
+          and info.id = #{id}
+    </select>
 </mapper>

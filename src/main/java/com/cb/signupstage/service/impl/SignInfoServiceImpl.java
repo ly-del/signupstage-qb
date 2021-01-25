@@ -71,6 +71,7 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
         if (list.size()>0){
             return  ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(false).failMsg("报名标题已存在").build();
         }
+        signInfo.setImage("https://cbpublic.oss-cn-shenzhen.aliyuncs.com/exam-resources/exam_default_image.png");
         signInfo.setCost(SignDec.COST);
         signInfo.setMaxTotal(SignDec.MAX_TOTAL);
         signInfo.setAccountId(accountId);

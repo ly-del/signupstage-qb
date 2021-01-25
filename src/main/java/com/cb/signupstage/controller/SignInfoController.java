@@ -72,7 +72,7 @@ public class SignInfoController {
 
         Long id = Long.valueOf(map.get("id"));
         String name = map.get("name");
-        String fsg = signInfoService.saveOrCopy(id,name, accountId);
+        String fsg = signInfoService.saveOrCopy(id, name, accountId);
         boolean b = StringUtils.isEmpty(fsg);
         return ResultBean.builder().statusCode(StatusCode.SUCCESS_CODE).result(b).failMsg(fsg).build();
     }
@@ -91,7 +91,11 @@ public class SignInfoController {
 
         //  signInfo.setUpdateTime(LocalDateTime.now());
         //更新 报名基础信息
+
         SignInfo signinfo = CopyUtils.copy(vo, SignInfo.class);
+        if (!ObjectUtils.isEmpty(signinfo.getGroupId())) {
+            signinfo.setIsRelease(1);
+        }
         signInfoService.saveOrUpdate(signinfo);
         //编辑报名需要的表单
         boolean b = signInfoFormService.batch(vo, accountId);
@@ -226,8 +230,8 @@ public class SignInfoController {
             new ResultBean<>(500, "id不能为空", true, null);
         }
         String msg = studentGroupService.deleteGroup(id, accountId);
-        if (!ObjectUtils.isEmpty(msg)){
-          return  ResultBean.failure(msg);
+        if (!ObjectUtils.isEmpty(msg)) {
+            return ResultBean.failure(msg);
         }
         return new ResultBean<>(200, msg, true, null);
     }
@@ -278,7 +282,7 @@ public class SignInfoController {
     public ResultBean<List<UserCustomize>> queryUserCustomize(@RequestHeader Long accountId) {
         // List customizeList = userInfoService.getCustomizeList(null);
         QueryWrapper<UserCustomize> wrapper = new QueryWrapper();
-        wrapper.eq("deleted",0);
+        wrapper.eq("deleted", 0);
         List<UserCustomize> list = userCustomizeService.list(wrapper);
         return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, list);
     }

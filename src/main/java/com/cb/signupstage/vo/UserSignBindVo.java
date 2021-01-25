@@ -2,6 +2,8 @@ package com.cb.signupstage.vo;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 /**
@@ -47,6 +49,8 @@ public class UserSignBindVo implements Serializable {
     /**
      * 手机号
      */
+    @NotEmpty(message = "手机号码不能为空")
+    @Pattern(regexp = "^1(3|4|5|7|8|9)\\d{9}$", message = "手机号码格式错误")
     private String mobile;
 
     /**
