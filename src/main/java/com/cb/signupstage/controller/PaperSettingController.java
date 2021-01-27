@@ -181,7 +181,7 @@ public class PaperSettingController {
     public ResultBean queryPaperUploadPage(@RequestBody Map<String, Integer> map, @RequestHeader Long accountId) {
 
         Page<PaperUploadPageDTO> pageBean = paperUploadRecordService.
-                queryPaperUploadPage(new Page<>(map.get("jumpPage"), map.get("pageSize")), accountId);
+                queryPaperUploadPage(new Page<>(map.get("jumpPage"), map.get("pageSize")), Long.valueOf(map.get("userId")));
         return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pageBean);
     }
 
