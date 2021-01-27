@@ -1,6 +1,7 @@
 package com.cb.signupstage.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.cb.signupstage.common.SignDec;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -58,8 +59,6 @@ public class UserInfo implements Serializable {
     /**
      * 手机号
      */
-    @NotEmpty(message = "手机号码不能为空")
-    @Pattern(regexp = "^1(3|4|5|7|8|9)\\d{9}$", message = "手机号码格式错误")
     @TableField("mobile")
     private String mobile;
 
@@ -73,7 +72,7 @@ public class UserInfo implements Serializable {
      * 性别
      */
     @TableField("sex")
-    private Integer sex;
+    private SignDec.SexEnum sex;
 
     /**
      * 地址
@@ -173,8 +172,8 @@ public class UserInfo implements Serializable {
     /**
      * 用户所属部门id
      */
-    @TableField("deptid")
-    private String deptid;
+    @TableField("deptId")
+    private String deptId;
 
     /**
      * 是否在职：0待业1在职
@@ -191,32 +190,32 @@ public class UserInfo implements Serializable {
     /**
      * 分组id
      */
-    @TableField("rongtoken")
-    private String rongtoken;
+    @TableField("rongToken")
+    private String rongToken;
 
     /**
      * 身份证号
      */
-    @TableField("idcard")
-    private String idcard;
+    @TableField("idCard")
+    private String idCard;
 
     /**
      * 身份证正面照
      */
-    @TableField("cardnoimg")
-    private String cardnoimg;
+    @TableField("cardNoImg")
+    private String cardNoImg;
 
     /**
      * 身份证反面照
      */
-    @TableField("cardnoimg2")
-    private String cardnoimg2;
+    @TableField("cardnoImg2")
+    private String cardnoImg2;
 
     /**
      * 国开大学学籍号
      */
-    @TableField("schoolnum")
-    private String schoolnum;
+    @TableField("schoolNum")
+    private String schoolNum;
 
     /**
      * 民族
@@ -233,26 +232,26 @@ public class UserInfo implements Serializable {
     /**
      * 学习中心
      */
-    @TableField("learncenter")
-    private String learncenter;
+    @TableField("learnCenter")
+    private String learnCenter;
 
     /**
      * 人脸识别0未识别 1识别用过 2 识别不通过
      */
-    @TableField("licensestatus")
-    private String licensestatus;
+    @TableField("licenseStatus")
+    private String licenseStatus;
 
     /**
      * 国开学籍注册状态（0未申请 1申请 2已完善 3申请拒绝）
      */
-    @TableField("schoolregister")
-    private String schoolregister;
+    @TableField("schoolRegister")
+    private String schoolRegister;
 
     /**
      * 证书总学分
      */
-    @TableField("certificatescore")
-    private Integer certificatescore;
+    @TableField("certificateScore")
+    private Integer certificateScore;
 
     /**
      * 国开学籍申请不通过原因
@@ -263,32 +262,32 @@ public class UserInfo implements Serializable {
     /**
      * 注册邀请人id
      */
-    @TableField("reginvitedid")
-    private Long reginvitedid;
+    @TableField("reginvitedId")
+    private Long reginvitedId;
 
     /**
      * 考试推荐人id
      */
-    @TableField("examinvitedid")
-    private Long examinvitedid;
+    @TableField("examinvitedId")
+    private Long examinvitedId;
 
     /**
      * vip购买推荐人id
      */
-    @TableField("vipinvitedid")
-    private Long vipinvitedid;
+    @TableField("vipinvitedId")
+    private Long vipinvitedId;
 
     /**
      * 课程购买推荐人id
      */
-    @TableField("schoolTime")
-    private Long courseinvitedid;
+    @TableField("courseinvitedId")
+    private Long courseinvitedId;
 
     /**
      * 入学时间
      */
     @TableField("schoolTime")
-    private String schooltime;
+    private String schoolTime;
 
     /**
      * 自定义用户信息（json）

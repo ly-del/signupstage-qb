@@ -58,7 +58,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     private UserGroupBindService userGroupBindService;
 
-
+@Autowired
+private UserGroupEntityMapper userGroupEntityMapper;
 
 
     /**
@@ -202,6 +203,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     public IPage<UserInfoPageDTO> pageQuery(Page<UserInfo> page, UserSelectPageVo vo, Long accountId) {
 
+
         //查询列表
         IPage<UserInfoPageDTO> userInfos = userInfoMapper.pageQuery(page, vo, accountId);
 
@@ -287,27 +289,32 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (signInfos.size() == 0) {
             return ResultBean.builder().result(false).statusCode(StatusCode.SYSTEM_EXCEPTION_CODE).failMsg("报名信息不存在").build();
         }
-        //报名之前 先查询 是否已经报过名 (目前是手机号做唯一识别)  存在
-        List<UserSignInfo> bindList = userSignInfoMapper.getExist(vo);
-        if (bindList.size() > 0) {
-            //已经存在当前报名的 报名信息记录 不能重复报名
-            return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg(null).build();
-        }
+//        //报名之前 先查询 是否已经报过名 (目前是手机号做唯一识别)  存在
+//        List<UserSignInfo> bindList = userSignInfoMapper.getExist(vo);
+//        if (bindList.size() > 0) {
+//            //已经存在当前报名的 报名信息记录 不能重复报名
+//            return ResultBean.builder().result(true).statusCode(StatusCode.SUCCESS_CODE).failMsg(null).build();
+//        }
         //创建报名信息
         //先创建用户信息 存在就不创建
         UserInfo userInfo = new UserInfo();
         userInfo.setMobile(vo.getMobile());
         userInfo.setStatus(SignDec.STATUS_UN_DELETED);
-        if (!ObjectUtils.isEmpty(vo.getCustomInformation())) {
-            String customInformation = String.valueOf(vo.getCustomInformation());
-            userInfo.setCustomInformation(customInformation);
-        }
-
         QueryWrapper<UserInfo> wrapper = new QueryWrapper<>(userInfo);
         List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
         Long userId = null;
+        //用户不存在就创建一个用户
         if (userInfos.size() <= 0) {
-            //用户不存在就创建一个用户
+
+            //先校验身份证号码是否已被使用
+            if (!ObjectUtils.isEmpty(vo.getIdCard())) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("idCard", vo.getIdCard());
+                List<UserInfo> idCardIsExist = userInfoMapper.selectByMap(map);
+                if (idCardIsExist.size()>0){
+                    return ResultBean.failure("身份证已使用,请填写正确的身份证");
+                }
+            }
             UserInfo copy = CopyUtils.copy(vo, UserInfo.class);
             copy.setUserName(vo.getUserName());
             copy.setCreateUser(String.valueOf(accountId));
@@ -315,6 +322,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfoMapper.insert(copy);
             userId = copy.getId();
         } else {
+            //用户存在 判断身份证是否与注册一致
+            if (!ObjectUtils.isEmpty(vo.getIdCard()) && !ObjectUtils.isEmpty(userInfos.get(0).getIdCard())){
+                if(!vo.getIdCard().equals(userInfos.get(0).getIdCard())){
+                    return ResultBean.failure("请填写本人绑定的身份证号");
+                }
+            }
+
             userId = userInfos.get(0).getId();
         }
 

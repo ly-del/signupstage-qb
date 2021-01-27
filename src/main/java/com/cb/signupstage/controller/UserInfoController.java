@@ -19,6 +19,7 @@ import com.cb.signupstage.entity.UserInfo;
 import com.cb.signupstage.service.UserGroupBindService;
 import com.cb.signupstage.service.UserInfoService;
 import com.cb.signupstage.service.impl.UserInfoServiceImpl;
+import com.cb.signupstage.utils.CheckPhoneUtil;
 import com.cb.signupstage.utils.CopyUtils;
 import com.cb.signupstage.vo.UserDeletedVo;
 import com.cb.signupstage.vo.UserSelectPageVo;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +43,7 @@ import java.util.Map;
  * @time: 2020/11/11 9:11
  * @description: 考生管理 控制层
  */
+
 @Api(tags = "用户信息列表")
 @RestController
 @Slf4j
@@ -122,8 +125,19 @@ public class UserInfoController {
     @PostMapping(value = "/bind/info")
     public ResultBean userInfoBind(@RequestBody UserSignBindVo vo, @RequestHeader Long accountId) {
         log.info("vo.{}", vo);
+
         if (ObjectUtils.isEmpty(vo.getUserName()) || ObjectUtils.isEmpty(vo.getMobile())){
             return ResultBean.failure("姓名或手机号不能为空");
+        }
+        boolean b = CheckPhoneUtil.CheckMobilePhoneNum(vo.getMobile());
+        if (!b){
+            return ResultBean.failure("请填写正确的手机号格式");
+        }
+        if(!ObjectUtils.isEmpty(vo.getIdCard())){
+            boolean idCard = CheckPhoneUtil.isIDCard(vo.getIdCard());
+            if (!idCard){
+                return ResultBean.failure("请填写正确的身份证格式");
+            }
         }
         return  userInfoService.userInfoBind(vo, accountId);
 

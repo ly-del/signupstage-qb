@@ -48,7 +48,8 @@
             and info.idCard like concat( #{entity.idCard} , '%')
         </if>
         <if test="entity.groupId != null and entity.groupId != ''">
-            and (g.id in (#{entity.groupId}) or g.id in (select GROUP_CONCAT(id) from (
+            and (g.id in (#{entity.groupId}) or g.parent_id in (#{entity.groupId})
+             or g.parent_id in (select GROUP_CONCAT(id) from (
 
             select t1.id,
 

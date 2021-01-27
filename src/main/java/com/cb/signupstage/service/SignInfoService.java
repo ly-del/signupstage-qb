@@ -45,7 +45,7 @@ public interface SignInfoService extends IService<SignInfo> {
      * @return
      */
     IPage<UserSearchVo> queryUserSignPage(Page<SignInfo> page, UserSearchVo vo, Long accountId);
-    List<UserSignSearchVo> querySignPage( UserSignSearchVo vo, Long accountId);
+    List<UserSignSearchVo> querySignPage( UserSignSearchVo vo);
 
     ResultBean saveFirst(SignInfo signInfo, Long accountId);
 

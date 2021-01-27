@@ -164,11 +164,11 @@
             <version>2.3.30</version>
         </dependency>
 
-       <!-- <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus</artifactId>
-            <version>3.4.1</version>
-        </dependency>-->
+        <!-- <dependency>
+             <groupId>com.baomidou</groupId>
+             <artifactId>mybatis-plus</artifactId>
+             <version>3.4.1</version>
+         </dependency>-->
 
         <dependency>
             <groupId>com.baomidou</groupId>
@@ -217,9 +217,20 @@
             <version>2.9.2</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>cn.com.dreamspark</groupId>
+            <artifactId>duplicate-check</artifactId>
+            <version>0.4.1</version>
+        </dependency>
 
     </dependencies>
+    <repositories>
+        <repository>
+            <id>dreamspark</id>
+            <name>Dreamspark Public Repository</name>
+            <url>https://maven.dreamspark.com.cn/repository/maven-releases/</url>
+        </repository>
+    </repositories>
 
 
     <build>
@@ -228,23 +239,23 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-          <!--  <plugin>
-                <groupId>org.mybatis.generator</groupId>
-                <artifactId>mybatis-generator-maven-plugin</artifactId>
-                <configuration>
-                    <configurationFile>src\main\resources\generator.xml</configurationFile>
-                    <verbose>true</verbose>
-                    <overwrite>true</overwrite>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>GenerateMyBatis Artifacts</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
+            <!--  <plugin>
+                  <groupId>org.mybatis.generator</groupId>
+                  <artifactId>mybatis-generator-maven-plugin</artifactId>
+                  <configuration>
+                      <configurationFile>src\main\resources\generator.xml</configurationFile>
+                      <verbose>true</verbose>
+                      <overwrite>true</overwrite>
+                  </configuration>
+                  <executions>
+                      <execution>
+                          <id>GenerateMyBatis Artifacts</id>
+                          <goals>
+                              <goal>generate</goal>
+                          </goals>
+                      </execution>
+                  </executions>
+              </plugin>-->
 
 
             <plugin>
@@ -258,6 +269,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

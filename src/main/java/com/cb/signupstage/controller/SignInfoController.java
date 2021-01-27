@@ -172,18 +172,18 @@ public class SignInfoController {
     }
 
 
-    @ApiOperation("hhhhh")
-    @PostMapping(value = "/ex/userToGroup")
-    public void ex(HttpServletResponse response) {
+    @ApiOperation("报名人数导出")
+    @GetMapping(value = "/ex/applyStudents")
+    public void ex(HttpServletResponse response,@RequestParam String signId) {
 
         String fileName = "报名人数报表";
 
         // 自定义Excel文件名
         String excelName = fileName;
         UserSignSearchVo vo = new UserSignSearchVo();
-        vo.setSignId(String.valueOf(1));
+        vo.setSignId(signId);
 
-        List<UserSignSearchVo> pagedResult = signInfoService.querySignPage(vo, Long.valueOf(1));
+        List<UserSignSearchVo> pagedResult = signInfoService.querySignPage(vo);
 
         // easyexcel工具类实现Excel文件导出
         ExcelUtil.writeExcel(response, pagedResult, fileName, excelName, new UserSignSearchVo());

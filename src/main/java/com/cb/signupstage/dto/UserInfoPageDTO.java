@@ -1,5 +1,6 @@
 package com.cb.signupstage.dto;
 
+import com.cb.signupstage.common.SignDec;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -58,7 +59,7 @@ public class UserInfoPageDTO {
     /**
      * 性别
      */
-    private Integer sex;
+    private SignDec.SexEnum sex;
 
     /**
      * 地址
@@ -74,7 +75,15 @@ public class UserInfoPageDTO {
      * 部门
      */
     private String  deptName;
+
+    /**
+     * 身份证
+     */
     private String  idCard;
+
+    /**
+     * 自定义信息
+     */
     private String  customInformation;
 
     /**
@@ -82,5 +91,8 @@ public class UserInfoPageDTO {
      */
     private String  groupName;
 
+    /**
+     * 分组id
+     */
     private String groupId;
 }

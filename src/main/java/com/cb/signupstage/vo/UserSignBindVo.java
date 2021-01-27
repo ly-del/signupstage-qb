@@ -1,7 +1,10 @@
 package com.cb.signupstage.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
@@ -24,6 +27,8 @@ public class UserSignBindVo implements Serializable {
     /**
      * 登陆账号
      */
+    @NotEmpty(message = "姓名不能为空")
+    @Length(max = 30, min = 2,message = "姓名长度限制2~30字符")
     private String userName;
 
     /**
@@ -49,8 +54,6 @@ public class UserSignBindVo implements Serializable {
     /**
      * 手机号
      */
-    @NotEmpty(message = "手机号码不能为空")
-    @Pattern(regexp = "^1(3|4|5|7|8|9)\\d{9}$", message = "手机号码格式错误")
     private String mobile;
 
     /**
@@ -81,7 +84,7 @@ public class UserSignBindVo implements Serializable {
     /**
      * 身份证
      */
-    private String idcard;
+    private String idCard;
 
     /**
      * 描述

@@ -75,19 +75,26 @@ public class SignDec {
             return value;
         }
 
-        /**
-         * 根据code获取去value
-         * @param code
-         * @return
-         */
-       /* public static String getValueByCode(String code){
-            for(ProfessionalOrSimple platformFree:ProfessionalOrSimple.values()){
-                if(code.equals(platformFree.getCode())){
-                    return platformFree.getValue();
-                }
-            }
-            return  null;
-        }*/
+    }
+
+    public enum SexEnum {
+        Unknown(0, "未知"), Man(1, "男"),Woman(2,"女");
+        private Integer code;
+
+        private String value;
+
+        SexEnum(Integer code, String value) {
+            this.code = code;
+            this.value = value;
+        }
+
+        public Integer getCode() {
+            return code;
+        }
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
 
     }
 

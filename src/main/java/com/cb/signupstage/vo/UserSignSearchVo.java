@@ -31,7 +31,7 @@ public class UserSignSearchVo extends BaseRowModel {
 
     @ExcelProperty(value = "性别", index = 2)
     @ApiModelProperty(value = "性别")
-    private Integer sex;
+    private String sex;
 
     @ExcelProperty(value = "身份证", index = 3)
     @ApiModelProperty(value = "身份证")

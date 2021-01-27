@@ -214,11 +214,11 @@ public class SignInfoServiceImpl  extends ServiceImpl<SignInfoMapper, SignInfo> 
     }
 
     @Override
-    public List<UserSignSearchVo> querySignPage( UserSignSearchVo vo, Long accountId) {
+    public List<UserSignSearchVo> querySignPage( UserSignSearchVo vo) {
        // PageHelper.startPage(page.getPageNum(), page.getPageSize());
         //先查询所有的  报名基础性信息
 
-        List<UserSignSearchVo> userSignList = userSignInfoMapper.selectExportPageList(vo,accountId);
+        List<UserSignSearchVo> userSignList = userSignInfoMapper.selectExportPageList(vo);
 
         return userSignList;
     }

@@ -2,6 +2,7 @@ package com.cb.signupstage.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -49,7 +50,8 @@ public class UserSearchVo {
     private Integer pageSize;
 
     @ApiModelProperty(value = "报名时间")
-    private Date creatTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
 
     @ApiModelProperty(value = "缴费状态")
     private Integer costStatus;

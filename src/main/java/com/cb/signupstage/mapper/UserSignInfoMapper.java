@@ -23,5 +23,5 @@ public interface UserSignInfoMapper extends BaseMapper<UserSignInfo> {
     //查询  报名人数 列表
     IPage<UserSearchVo> selectPageList(Page<SignInfo> page, @Param("entity") UserSearchVo vo, Long accountId);
 
-    List<UserSignSearchVo> selectExportPageList(@Param("entity")UserSignSearchVo vo, Long accountId);
+    List<UserSignSearchVo> selectExportPageList(@Param("entity")UserSignSearchVo vo);
 }
