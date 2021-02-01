@@ -22,7 +22,7 @@
         LEFT JOIN user_info u on u.id = pur.user_id
         LEFT JOIN paper_setting ps on ps.id = pur.paper_group_id
         LEFT JOIN ${dataBase}.sys_examination ex ON ex.id = ps.test_id
-        AND pur.user_id = a.user_id
+
         WHERE pur.deleted = 0
         <if test="entity.paperName != null and entity.paperName != ''">
 
@@ -38,17 +38,27 @@
     </select>
     <select id="getPaperReviewList" resultType="com.cb.signupstage.dto.PaperReviewExportDTO">
         SELECT
-	pur.id,
-	ps.paper_group_name,
-	pur.paper_name,
-	( CASE pur.review_status WHEN 0 THEN "审核不通过" WHEN 1 THEN "审核通过" WHEN 2 THEN "待审核" ELSE "待审核" END ) AS review_status,
-	pur.create_time,
-	a.submitNum
-FROM
-	( SELECT user_id, max( create_time ) AS create_time, count( 1 ) AS submitNum FROM paper_upload_record GROUP BY user_id ) a
-	LEFT JOIN paper_upload_record pur ON pur.create_time = a.create_time AND pur.user_id = a.user_id
-	LEFT JOIN paper_setting ps ON ps.id = pur.paper_group_id
-        WHERE pur.id in (#{ids})
+        pur.id,
+        ps.paper_group_name,
+        pur.paper_name,
+        ( CASE pur.review_status WHEN 0 THEN "审核不通过" WHEN 1 THEN "审核通过" WHEN 2 THEN "待审核" ELSE "待审核" END ) AS
+        review_status,
+        pur.create_time,
+        a.submitNum
+        FROM
+        ( SELECT user_id, max( create_time ) AS create_time, count( 1 ) AS submitNum FROM paper_upload_record GROUP BY
+        user_id ) a
+        LEFT JOIN paper_upload_record pur ON pur.create_time = a.create_time and pur.user_id = a.user_id
+
+        LEFT JOIN paper_setting ps ON ps.id = pur.paper_group_id
+        <where> 1=1
+
+            <if test="idList.size>0">
+                <foreach collection="idList" item="item" open="and pur.id IN(" separator="," close=")">
+                    #{item,jdbcType=BIGINT}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 </mapper>

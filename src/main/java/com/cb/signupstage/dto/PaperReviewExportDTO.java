@@ -3,8 +3,6 @@ package com.cb.signupstage.dto;
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
-import com.cb.signupstage.common.SignDec;
-import com.sun.rowset.internal.BaseRow;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -15,6 +13,7 @@ import lombok.Data;
  */
 @Data
 public class PaperReviewExportDTO extends BaseRowModel {
+
     @ExcelIgnore
     private Long id;
 

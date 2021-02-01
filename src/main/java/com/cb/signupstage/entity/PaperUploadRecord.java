@@ -71,6 +71,13 @@ public class PaperUploadRecord implements Serializable {
     @TableField("user_id")
     private Long userId;
 
+
+    /**
+     *
+     */
+    @TableField("repeat_status")
+    private Integer repeatStatus;
+
     /**
      * 创建时间
      */

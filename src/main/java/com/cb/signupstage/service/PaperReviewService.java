@@ -24,5 +24,5 @@ public interface PaperReviewService extends IService<PaperReview> {
 //审核详情
     PaperReviewDetailDTO getPaperReviewDetail(Long id,String dataBase);
 
-    List<PaperReviewExportDTO> exportPageReviewRecordList(String ids);
+    List<PaperReviewExportDTO> exportPageReviewRecordList(List<Long> ids);
 }

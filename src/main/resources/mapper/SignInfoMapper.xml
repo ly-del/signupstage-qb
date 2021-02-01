@@ -4,18 +4,18 @@
 
 
     <select id="selectPageList" resultType="com.cb.signupstage.vo.SignInfoVo">
-        SELECT
-	info.id,
-info.`name`,
-info.`describe`,
-info.max_total,
-info.cost,
-info.image,
-info.start_time,
-info.end_time,info.create_time,
-info.group_id,
-IF(g.group_name IS NULL,"未分组",g.group_name) as groupName,
-COUNT(bind.id) AS count,
+        SELECT info.id,
+               info.`name`,
+               info.`describe`,
+               info.max_total,
+               info.cost,
+               info.image,
+               info.start_time,
+               info.end_time,
+               info.create_time,
+               info.group_id,
+               IF(g.group_name IS NULL, "未分组", g.group_name) as groupName,
+               COUNT(bind.id) AS count,
 	SUM(
 		IF (
 			bind.deleted = 0,
@@ -23,60 +23,77 @@ COUNT(bind.id) AS count,
 			0
 		)
 	) AS costTotal
-FROM
-	sign_info info
-LEFT JOIN user_sign_info bind ON bind.sign_id = info.id
-LEFT JOIN user_group g on g.id = info.group_id
-WHERE info.deleted = 0
-GROUP BY
-	info.id ORDER BY info.create_time DESC
+        FROM
+            sign_info info
+            LEFT JOIN user_sign_info bind
+        ON bind.sign_id = info.id
+            LEFT JOIN user_group g on g.id = info.group_id
+        WHERE info.deleted = 0
+        GROUP BY
+            info.id
+        ORDER BY info.create_time DESC
     </select>
 
     <!--查询报名人数和总收益-->
     <select id="selectCountAndCost" resultType="com.cb.signupstage.dto.SignInfoPageDTO">
-select SUM(a.count1)as week,SUM(a.count2) as month ,SUM(a.cost) as cost from
-(
-SELECT
-	COUNT(bind.user_id) AS count1, 0 as count2 ,0 as cost
-FROM
-	user_sign_info bind
-WHERE
-	YEARWEEK(
-		date_format(create_time, '%Y-%m-%d'),
-		1
-	) = YEARWEEK(now(), 1)
-union all
-SELECT  0 as count1,
-	COUNT(bind.user_id) AS count2 ,0 as cost
-FROM
-	user_sign_info bind
-WHERE
-	DATE_FORMAT(create_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
-union ALL
-select 0 as count1,0 as count2, bind.cost  from user_sign_info bind
-
-)a
+        SELECT SUM(a.count1) AS WEEK,
+               SUM(a.count2) AS MONTH,
+	SUM( a.cost ) AS cost
+        FROM
+            (
+            SELECT
+            COUNT ( bind.user_id ) AS count1,
+            0 AS count2,
+            0 AS cost
+            FROM
+            user_sign_info bind
+            LEFT JOIN user_info info ON info.id = bind.user_id
+            WHERE
+            YEARWEEK( date_format( create_time, '%Y-%m-%d' ), 1 ) = YEARWEEK( now(), 1 )
+            AND info.STATUS = 1 UNION ALL
+            SELECT
+            0 AS count1,
+            COUNT ( bind.user_id ) AS count2,
+            0 AS cost
+            FROM
+            user_sign_info bind
+            LEFT JOIN user_info info ON info.id = bind.user_id
+            WHERE
+            DATE_FORMAT( create_time, '%Y%m' ) = DATE_FORMAT( CURDATE(), '%Y%m' )
+            AND info.STATUS = 1 UNION ALL
+            SELECT
+            0 AS count1,
+            0 AS count2,
+            bind.cost
+            FROM
+            user_sign_info bind
+            LEFT JOIN user_info info ON info.id = bind.user_id
+            WHERE
+            info.STATUS = 1
+            ) a
     </select>
     <!--查询本周的报名人数-->
     <select id="selectThisWeekCount" resultType="java.lang.Integer">
-SELECT
-	COUNT(bind.user_id) AS count
-FROM
-	user_sign_info bind
-WHERE
-	YEARWEEK(
-		date_format(create_time, '%Y-%m-%d'),
-		1
-	) = YEARWEEK(now(), 1)
-	</select>
+        SELECT COUNT(bind.user_id) AS count
+        FROM
+            user_sign_info bind
+        WHERE
+            YEARWEEK(
+            date_format(create_time
+            , '%Y-%m-%d')
+            , 1
+            ) = YEARWEEK(now()
+            , 1)
+    </select>
     <!--查询本月的报名人数-->
     <select id="selectThisMonthCount" resultType="java.lang.Integer">
-SELECT
-	COUNT(bind.user_id) AS count
-FROM
-	user_sign_info bind
-WHERE
-	DATE_FORMAT(create_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
-	</select>
+        SELECT COUNT(bind.user_id) AS count
+        FROM
+            user_sign_info bind
+        WHERE
+            DATE_FORMAT(create_time
+            , '%Y%m') = DATE_FORMAT(CURDATE()
+            , '%Y%m')
+    </select>
 
 </mapper>

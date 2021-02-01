@@ -118,25 +118,25 @@ public class SignInfoController {
 
     @ApiOperation("分页查询 报名信息")
     @PostMapping(value = "/query/pageList")
-    public ResultBean<SignInfoPageDTO> queryPage(
+    public ResultBean queryPage(
             @RequestBody SignInfoPageSearchVo vo, @RequestHeader Long accountId) {
         Page<SignInfo> page = new Page<>(vo.getJumpPage(), vo.getPageSize());
         SignInfoPageDTO pagedResult = signInfoService.queryPage(page, accountId);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pagedResult);
+        return ResultBean.success(pagedResult,null);
     }
 
 
     @ApiOperation("查看报名人数列表")
     @PostMapping(value = "/page/usersignPage")
-    public ResultBean<UserSearchVo> usersignPage(@RequestBody UserSearchVo vo, @RequestHeader Long accountId) {
+    public ResultBean usersignPage(@RequestBody UserSearchVo vo, @RequestHeader Long accountId) {
         if (ObjectUtils.isEmpty(vo.getSignId())) {
-            return new ResultBean<>(200, "报名id不能为空", true, null);
+            return ResultBean.failure("报名id不能为空");
         }
 
         Page<SignInfo> page = new Page<>(vo.getJumpPage(), vo.getPageSize());
         IPage<UserSearchVo> pagedResult = signInfoService.queryUserSignPage(page, vo, accountId);
 
-        return new ResultBean(StatusCode.SUCCESS_CODE, null, true, pagedResult);
+        return  ResultBean.success(pagedResult, null );
     }
 
 
@@ -222,18 +222,18 @@ public class SignInfoController {
 
     @ApiOperation("删除分组")
     @PostMapping(value = "/delete/group")
-    public ResultBean<Object> deleteGroup(HttpServletRequest request, @RequestHeader Long accountId, @RequestBody Map<String, String> map) {
+    public ResultBean deleteGroup(HttpServletRequest request, @RequestHeader Long accountId, @RequestBody Map<String, String> map) {
 
         Long id = Long.valueOf(map.get("id"));
         log.info("student create group accountId.{} userGroupEntity.{}", accountId, id);
         if (org.springframework.util.ObjectUtils.isEmpty(id)) {
-            new ResultBean<>(500, "id不能为空", true, null);
+            ResultBean.failure("id不能为空");
         }
         String msg = studentGroupService.deleteGroup(id, accountId);
         if (!ObjectUtils.isEmpty(msg)) {
             return ResultBean.failure(msg);
         }
-        return new ResultBean<>(200, msg, true, null);
+        return ResultBean.success(msg);
     }
 
     @ApiOperation("查询分组信息列表")
@@ -279,12 +279,12 @@ public class SignInfoController {
      */
     @ApiOperation("查询 自定义列表")
     @GetMapping(value = "/query/customize")
-    public ResultBean<List<UserCustomize>> queryUserCustomize(@RequestHeader Long accountId) {
+    public ResultBean queryUserCustomize(@RequestHeader Long accountId) {
         // List customizeList = userInfoService.getCustomizeList(null);
         QueryWrapper<UserCustomize> wrapper = new QueryWrapper();
         wrapper.eq("deleted", 0);
         List<UserCustomize> list = userCustomizeService.list(wrapper);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, list);
+        return ResultBean.success( list,null);
     }
 
     /**
@@ -326,7 +326,7 @@ public class SignInfoController {
         List<Long> userIds = map.get("userIds");
         log.info("queryUserCustomize groupIds.{} userIds.{}", groupIds, userIds);
         userInfoService.moveUserToGroup(groupIds, userIds, accountId);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, null);
+        return ResultBean.success(null);
     }
 
   /*  @ApiOperation("单个考生用户移动到组")

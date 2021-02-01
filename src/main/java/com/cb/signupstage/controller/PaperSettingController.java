@@ -1,36 +1,37 @@
 package com.cb.signupstage.controller;
 
-
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.alibaba.excel.ExcelReader;
+import com.alibaba.excel.metadata.BaseRowModel;
+import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cb.signupstage.common.ResultBean;
 import com.cb.signupstage.common.SignDec;
-import com.cb.signupstage.common.StatusCode;
 import com.cb.signupstage.dto.*;
 import com.cb.signupstage.entity.*;
 import com.cb.signupstage.service.*;
 import com.cb.signupstage.utils.ExcelUtil;
 import com.cb.signupstage.vo.PaperInterviewSettingSearchVo;
+import com.cb.signupstage.vo.PaperReviewImportVo;
 import com.cb.signupstage.vo.PaperSettingPageSearchVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.Get;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * <p>
@@ -45,6 +46,7 @@ import java.util.stream.Stream;
 @Slf4j
 @RequestMapping("/paper-setting/v1")
 public class PaperSettingController {
+
 
     @Autowired
     private PaperSettingService paperSettingService;
@@ -77,7 +79,7 @@ public class PaperSettingController {
         log.info("paper setting request.{}", paperSetting);
 
         //新增 查询是否已存在
-        QueryWrapper wrapper = new QueryWrapper();
+        QueryWrapper<PaperSetting> wrapper = new QueryWrapper<>();
         wrapper.eq("test_id", paperSetting.getTestId());
         wrapper.eq("paper_group_name", paperSetting.getPaperGroupName());
         List<PaperSetting> list = paperSettingService.list(wrapper);
@@ -98,21 +100,21 @@ public class PaperSettingController {
             }
         }
         boolean b = paperSettingService.saveOrUpdate(paperSetting);
-        return new ResultBean(200, null, b, null);
+        return ResultBean.result(b, null);
     }
 
 
     @ApiOperation("删除 论文分组")
     @PostMapping(value = "/delete/delPaperSetting")
     public ResultBean deletePaperSetting(
-            @RequestBody Map<String, String> map, @RequestHeader Long accountId) {
+            @RequestBody Map<String, String> map) {
         Long id = Long.valueOf(map.get("id"));
         PaperSetting paperSetting = new PaperSetting();
         paperSetting.setId(id);
         paperSetting.setDeleted(SignDec.deletedType.DELETED.getCode());
         boolean b = paperSettingService.updateById(paperSetting);
 
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, b, null);
+        return ResultBean.result(b, null);
     }
 
     @ApiOperation("分页查询论文分组设置")
@@ -121,8 +123,8 @@ public class PaperSettingController {
             @RequestBody PaperSettingPageSearchVo vo, @RequestHeader Long accountId) {
 
 
-        Page<T> pagebean = paperSettingService.queryPaperPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo, dataBase);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pagebean);
+        Page<T> pageBean = paperSettingService.queryPaperPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo, dataBase);
+        return ResultBean.success(pageBean, null);
     }
 
     @ApiOperation("论文分组详情")
@@ -137,17 +139,17 @@ public class PaperSettingController {
 
     @ApiOperation("查询论文分组list")
     @PostMapping(value = "/query/paperSettingList")
-    public ResultBean queryPaperSettingList(@RequestBody Map<String,String> map,
-            @RequestHeader Long accountId) {
-        if (ObjectUtils.isEmpty(map.get("source"))){
+    public ResultBean queryPaperSettingList(@RequestBody Map<String, String> map,
+                                            @RequestHeader Long accountId) {
+        if (ObjectUtils.isEmpty(map.get("source"))) {
             return ResultBean.failure("报名来源不能为空");
         }
         Long source = Long.valueOf(map.get("source"));
-        QueryWrapper<PaperSetting> wrapper = new QueryWrapper();
+        QueryWrapper<PaperSetting> wrapper = new QueryWrapper<>();
         wrapper.eq("deleted", SignDec.deletedType.UN_DELETED.getCode())
-        .eq("source",source);
-        List list = paperSettingService.list(wrapper);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, list);
+                .eq("source", source);
+        List<PaperSetting> list = paperSettingService.list(wrapper);
+        return ResultBean.success(list, null);
     }
 
     @ApiOperation("论文审核记录分页列表")
@@ -155,14 +157,14 @@ public class PaperSettingController {
     public ResultBean queryPaperReviewPage(
             @RequestBody PaperSettingPageSearchVo vo, @RequestHeader Long accountId) {
 
-        Page<PaperReviewPageDTO> pagebean = paperReviewService.queryPaperReviewPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo, dataBase);
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pagebean);
+        Page<PaperReviewPageDTO> pageBean = paperReviewService.queryPaperReviewPage(new Page<>(vo.getJumpPage(), vo.getPageSize()), vo, dataBase);
+        return ResultBean.success(pageBean, null);
     }
 
 
     @ApiOperation("批量导出 审核记录")
-    @PostMapping(value = "/export/pageReviewRecordList")
-    public void exportPageReviewRecordList(HttpServletResponse response, @RequestParam String ids) {
+    @GetMapping(value = "/export/pageReviewRecordList")
+    public void exportPageReviewRecordList(HttpServletResponse response, @RequestParam List<Long> ids) {
 
         String fileName = "审核记录列表";
 
@@ -170,8 +172,8 @@ public class PaperSettingController {
         String excelName = fileName;
 
         List<PaperReviewExportDTO> dto = paperReviewService.exportPageReviewRecordList(ids);
-
-        // easyexcel工具类实现Excel文件导出
+        System.out.println("dto11111111111" + dto.toString());
+        // easyExcel工具类实现Excel文件导出
         ExcelUtil.writeExcel(response, dto, fileName, excelName, new PaperReviewExportDTO());
 
     }
@@ -182,7 +184,7 @@ public class PaperSettingController {
 
         Page<PaperUploadPageDTO> pageBean = paperUploadRecordService.
                 queryPaperUploadPage(new Page<>(map.get("jumpPage"), map.get("pageSize")), Long.valueOf(map.get("userId")));
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, true, pageBean);
+        return ResultBean.success(pageBean, null);
     }
 
 
@@ -190,36 +192,63 @@ public class PaperSettingController {
     @PostMapping(value = "/review/onePaper")
     public ResultBean reviewPaper(@RequestBody PaperReview paperReview, @RequestHeader Long accountId) {
 
+        //同步更新论文上传记录表的 审核状态
+        PaperUploadRecord paperUploadRecord = new PaperUploadRecord();
+        paperUploadRecord.setId(paperReview.getPaperId());
+        paperUploadRecord.setReviewStatus(paperReview.getReviewStatus());
+        paperUploadRecordService.updateById(paperUploadRecord);
+
         boolean b = paperReviewService.saveOrUpdate(paperReview);
-        if (b) {
-            //同步更新论文上传记录表的 审核状态
-            PaperUploadRecord paperUploadRecord = new PaperUploadRecord();
-            paperUploadRecord.setId(paperReview.getPaperId());
-            paperUploadRecord.setReviewStatus(paperReview.getReviewStatus());
-            paperUploadRecordService.updateById(paperUploadRecord);
-        }
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, b, null);
+
+        return ResultBean.result(b, null);
     }
 
     @ApiOperation("批量论文审核")
-    @PostMapping(value = "/review/paperBanth")
+    @PostMapping(value = "/review/paperBatch")
     public ResultBean reviewPaper(@RequestBody Map<String, Object> map, @RequestHeader Long accountId) {
 
-        List<Map<String,String>> listMaps = (List<Map<String,String>>) map.get("ids");
         Integer reviewStatus = (Integer) map.get("reviewStatus");
-        List<String> idStr = listMaps.stream().map(p -> p.get("id")).collect(Collectors.toList());
+        List<Long> idList = JSONArray.parseArray(map.get("ids").toString(), Long.class);
+        String reviewDec;
+        if (reviewStatus.equals(1)) {
+            reviewDec = "审核通过，祝你一切顺利";
+        } else {
+            reviewDec = "审核不通过";
+        }
+        //插入审核记录表
+        List<PaperReview> reviewList = new ArrayList<>(idList.size());
+        for (Long paperId : idList) {
+            PaperReview paperReview = new PaperReview();
+            paperReview.setPaperId(paperId);
+            paperReview.setReviewStatus(SignDec.paperReviewStatus.values()[reviewStatus]);
+            paperReview.setReviewDec(reviewDec);
+            reviewList.add(paperReview);
+        }
+        paperReviewService.saveBatch(reviewList);
+
+        //更新论文上传表
+        LambdaUpdateWrapper<PaperUploadRecord> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.in(PaperUploadRecord::getId, idList).set(PaperUploadRecord::getReviewStatus, reviewStatus);
+        boolean b = paperUploadRecordService.update(null, lambdaUpdateWrapper);
+
+
+
+
+/*        List<Map<String, String>> listMaps = (List<Map<String, String>>) map.get("ids");
+
+        List<String> idStr = listMaps.stream().map().collect(Collectors.toList());
         List<Long> idLong = idStr.stream().map(p -> Long.parseLong(p)).collect(Collectors.toList());
         LambdaUpdateWrapper<PaperUploadRecord> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.in(PaperUploadRecord::getId, idLong).set(PaperUploadRecord::getReviewStatus, reviewStatus);
         boolean b = paperUploadRecordService.update(null, lambdaUpdateWrapper);
         boolean result = false;
         if (b) {
-//            String[] split = ids.split(",");
-//
-//            List<Long> collect = Arrays.stream(split)
-//                    .map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
+           *//* 字符串转 List<Long >
+                    String[]split = ids.split(",");
+            List<Long> collect = Arrays.stream(split)
+                    .map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());*//*
             List<PaperReview> saveList = new ArrayList<>();
-            for (Map<String,String> idMap : listMaps) {
+            for (Map<String, String> idMap : listMaps) {
                 PaperReview paperReview = new PaperReview();
                 paperReview.setPaperId(Long.valueOf(idMap.get("id")));
                 paperReview.setUserId(Long.valueOf(idMap.get("userId")));
@@ -227,20 +256,20 @@ public class PaperSettingController {
                 saveList.add(paperReview);
             }
             if (reviewStatus.equals(1)) {
-                saveList.forEach(e -> {
-                    e.setReviewDec("审核通过，祝你一切顺利");
-                });
+                saveList.forEach(e ->
+                    e.setReviewDec("审核通过，祝你一切顺利")
+                );
+            }else {
+                saveList.forEach(e ->
+                        e.setReviewDec("审核不通过")
+                );
             }
-            saveList.forEach(e -> {
-                e.setReviewDec("审核不通过");
-            });
-
             if (saveList.size() > 0) {
                 //同步更新审核记录 到 审核记录表里
                 result = paperReviewService.saveBatch(saveList);
             }
-        }
-        return new ResultBean<>(StatusCode.SUCCESS_CODE, null, result, null);
+        }*/
+        return ResultBean.result(b, null);
     }
 
     @ApiOperation("论文审核详情")
@@ -254,9 +283,8 @@ public class PaperSettingController {
     @ApiOperation("新增、编辑预约时间段")
     @PostMapping(value = "/saveOrUpdate/interviewSetting")
     public ResultBean saveOrUpdateInterviewSetting(@RequestBody PaperInterviewSetting paperInterviewSetting, @RequestHeader Long accountId) {
-
         //先查询有没有重复的 的记录
-        QueryWrapper wrapper = new QueryWrapper();
+        QueryWrapper<PaperInterviewSetting> wrapper = new QueryWrapper<>();
         wrapper.eq("paper_group_id", paperInterviewSetting.getPaperGroupId());
         wrapper.eq("booked_date", paperInterviewSetting.getBookedDate());
         wrapper.eq("start_time", paperInterviewSetting.getStartTime());
@@ -269,10 +297,10 @@ public class PaperSettingController {
                 return ResultBean.failure("当前分组的预约时间段已经存在,不能重复添加");
             }
             //根据日期判断  时间段是否存在交叉
-            QueryWrapper dateWraaper = new QueryWrapper();
-            dateWraaper.eq("paper_group_id", paperInterviewSetting.getPaperGroupId());
-            dateWraaper.eq("booked_date", paperInterviewSetting.getBookedDate());
-            List<PaperInterviewSetting> dateList = paperInterviewSettingService.list(dateWraaper);
+            QueryWrapper<PaperInterviewSetting> dateWrapper = new QueryWrapper<>();
+            dateWrapper.eq("paper_group_id", paperInterviewSetting.getPaperGroupId());
+            dateWrapper.eq("booked_date", paperInterviewSetting.getBookedDate());
+            List<PaperInterviewSetting> dateList = paperInterviewSettingService.list(dateWrapper);
             PaperInterviewSetting dateVo = new PaperInterviewSetting();
             dateVo.setStartTime(paperInterviewSetting.getStartTime());
             dateVo.setEndTime(paperInterviewSetting.getEndTime());
@@ -298,8 +326,8 @@ public class PaperSettingController {
 
         }
         //编辑
-        if (list.size()>0) {
-            if (paperInterviewSetting.getId() != list.get(0).getId()) {
+        if (list.size() > 0) {
+            if (!paperInterviewSetting.getId().equals(list.get(0).getId())) {
                 //该分组的预约时间段 已经存在 不能重复添加
                 return ResultBean.failure("该分组的 预约时间段已经存在 ,不能重复编辑");
             }
@@ -314,7 +342,7 @@ public class PaperSettingController {
     @PostMapping(value = "/delete/interviewSetting")
     public ResultBean deleteInterviewSettingList(@RequestBody PaperInterviewSetting paperInterviewSetting, @RequestHeader Long accountId) {
         //如果已经被绑定 就不能删除
-        QueryWrapper wrapper = new QueryWrapper();
+        QueryWrapper<PaperInterviewUserRelation> wrapper = new QueryWrapper<>();
         wrapper.eq("interview_id", paperInterviewSetting.getId());
         List list = paperInterviewUserRelationService.list(wrapper);
         if (list.size() > 0) {
@@ -323,15 +351,15 @@ public class PaperSettingController {
 
         //删除预约时间段
         boolean b = paperInterviewSettingService.deleteInterviewSetting(paperInterviewSetting);
-        return new ResultBean(200, null, true, null);
+        return ResultBean.result(b, null);
     }
 
     @ApiOperation("预约时间设置 分页列表")
     @PostMapping(value = "/query/interviewSettingList")
     public ResultBean queryInterviewSettingList(@RequestBody Map<String, Integer> map, @RequestHeader Long accountId) {
-        QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("paper_group_id",map.get("id"));
-        Page<PaperInterviewSetting> page = paperInterviewSettingService.page(new Page<>(map.get("jumpPage"), map.get("pageSize")),wrapper);
+        QueryWrapper<PaperInterviewSetting> wrapper = new QueryWrapper<>();
+        wrapper.eq("paper_group_id", map.get("id"));
+        Page<PaperInterviewSetting> page = paperInterviewSettingService.page(new Page<>(map.get("jumpPage"), map.get("pageSize")), wrapper);
 
         return new ResultBean(200, null, true, page);
     }
@@ -380,7 +408,7 @@ public class PaperSettingController {
         }
 
         //查看是否 还有 空闲时间 可预约   已预约人数!= 可预约人数
-        if (byId.getCanBookedNumber() == byId.getBookedNumber()) {
+        if (byId.getCanBookedNumber().equals(byId.getBookedNumber())) {
             //预约 人数已满 不可预约
             return ResultBean.failure("预约人数已满，不可预约");
         }
@@ -395,10 +423,9 @@ public class PaperSettingController {
         if (b) {
             //改变预约配置表  可预约人数+1
             //先查询
-            QueryWrapper wrapper = new QueryWrapper();
+            QueryWrapper<PaperInterviewSetting> wrapper = new QueryWrapper<>();
             wrapper.eq("id", paperInterviewUserRelation.getInterviewId());
             List<PaperInterviewSetting> list = paperInterviewSettingService.list(wrapper);
-
             if (list.size() > 0) {
                 //预约人数 +1  更新 PaperInterviewSetting 预约时间配置表
                 PaperInterviewSetting paperInterviewSetting = list.get(0);
@@ -426,10 +453,10 @@ public class PaperSettingController {
             //计算平均分
             boolean b1 = paperInterviewScoreService.calculateAverageScore(paperInterviewScore.getPaperId());
             if (!b1) {
-                return new ResultBean(500, "评分成功,计算平均分出现异常", false, null);
+                return ResultBean.failure("评分成功,计算平均分出现异常");
             }
         }
-        return new ResultBean(200, null, b, null);
+        return ResultBean.result(b, null);
     }
 
     @ApiOperation("面试管理 分页列表")
@@ -451,7 +478,7 @@ public class PaperSettingController {
             return ResultBean.failure("当前考试及格分数已设置，请勿重复提交");
         }
         boolean b = paperScoreSettingService.save(paperScoreSetting);
-        return new ResultBean(200, null, b, null);
+        return ResultBean.result(b, null);
     }
 
     @ApiOperation("编辑及格分数")
@@ -462,7 +489,7 @@ public class PaperSettingController {
             return ResultBean.failure("id或者分数不能为空");
         }
         boolean b = paperScoreSettingService.updateById(paperScoreSetting);
-        return new ResultBean(200, null, b, null);
+        return ResultBean.result(b, null);
     }
 
     @ApiOperation("批量导出 面试管理分页列表")
@@ -475,8 +502,7 @@ public class PaperSettingController {
         String excelName = fileName;
 
         List<PaperInterviewSettingExportDTO> dto = paperInterviewSettingService.exportInterviewSettingList(ids);
-
-        // eazyexcel工具类实现Excel文件导出
+        // easyExcel工具类实现Excel文件导出
         ExcelUtil.writeExcel(response, dto, fileName, excelName, new PaperInterviewSettingExportDTO());
 
     }
@@ -494,16 +520,15 @@ public class PaperSettingController {
 
     @ApiOperation("查询专业版/简易版报名列表")
     @PostMapping(value = "/query/queryTestList")
-    public ResultBean queryProfessionaplSignUpList(HttpServletResponse response, @RequestBody Map<String, String> map) {
+    public ResultBean queryProfessionalSignUpList(HttpServletResponse response, @RequestBody Map<String, String> map) {
         Integer source = Integer.valueOf(map.get("source"));
-        List<PaperApplyDTO> applyDTOList = new ArrayList<>();
+        List<PaperApplyDTO> applyDTOList;
         if (source == 0) {
             applyDTOList = paperUploadRecordService.getProfessionalApplyList();
         } else {
             applyDTOList = paperUploadRecordService.getSimpleApplyList();
         }
         return ResultBean.success(applyDTOList, null);
-
     }
 
 
@@ -518,10 +543,36 @@ public class PaperSettingController {
 
     @ApiOperation("预约时间详情")
     @PostMapping(value = "/query/queryReservationTimeDetail")
-    public ResultBean queryReservationTimeDetail(HttpServletResponse response, @RequestBody Map<String,String> map) {
-       Long id = Long.valueOf(map.get("id"));
-        PaperInterviewSetting bean  = paperInterviewSettingService.getById(id);
+    public ResultBean queryReservationTimeDetail(@RequestBody Map<String, String> map) {
+        Long id = Long.valueOf(map.get("id"));
+        PaperInterviewSetting bean = paperInterviewSettingService.getById(id);
         return ResultBean.success(bean, null);
+
+    }
+
+
+    @ApiOperation("审核导入")
+    @PostMapping(value = "/excel/excelImport")
+    public void importExcel(HttpServletResponse response, @RequestParam("file") MultipartFile file) throws Exception {
+
+        List<Object> list = ExcelUtil.readExcel(file, new PaperReviewImportVo(), 1, 1);    //根据实际改动new Catagory()
+
+        if (list.size() > 0) {
+            JSONArray jsonArray = JSONArray.parseArray(JSON.toJSONString(list));
+            List<PaperReviewImportVo> paperReviewList = JSONArray.parseArray(jsonArray.toString(), PaperReviewImportVo.class);
+            //操作数据 返回 错误的数据
+            List<PaperReviewImportErrorDTO> errorList = paperUploadRecordService.batchChangeRepeatStatus(paperReviewList);
+            if (errorList.size() > 0) {
+                log.info("错误的数据" + errorList.toString());
+
+               ExcelUtil.writeExcel(response, errorList, "导入失败数据", "导入失败数据", new PaperReviewImportErrorDTO());
+
+                // ExcelUtil.downloadLocal(dto,"D:/ps/","失败","失败");
+
+            }
+
+        }
+
 
     }
 

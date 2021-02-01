@@ -28,7 +28,7 @@ WHERE
         bind.sign_id
         from user_sign_info bind
         LEFT JOIN user_info u on u.id= bind.user_id
-        where bind.sign_id = #{entity.signId} and bind.deleted = 0
+        where bind.sign_id = #{entity.signId} and bind.deleted = 0 and u.status =1
         <if test="entity.sex != null and entity.sex != ''">
             and u.sex = #{entity.sex}
         </if>

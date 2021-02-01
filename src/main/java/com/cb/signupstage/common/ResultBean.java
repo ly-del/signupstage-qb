@@ -17,7 +17,7 @@ import java.io.Serializable;
 @Data
 @Builder
 @ApiModel(value = "响应信息主体")
-public class ResultBean<T> implements Serializable{
+public class ResultBean implements Serializable{
     private static final long serialVersionUID = 8962001572545196062L;
 
     /**
@@ -42,7 +42,7 @@ public class ResultBean<T> implements Serializable{
      * 接口返回数据
      */
     @ApiModelProperty(value = "接口返回数据")
-    private T data;
+    private Object data;
 
     //返回成功
     public static ResultBean success(){
@@ -52,29 +52,41 @@ public class ResultBean<T> implements Serializable{
         return resultBean;
     }
 
-    public static ResultBean success(String failmsg){
+    public static ResultBean success(String Msg){
         ResultBean resultBean = new ResultBean();
         resultBean.setStatusCode(200);
         resultBean.setResult(true);
-        resultBean.setFailMsg(failmsg);
+        resultBean.setFailMsg(Msg);
         return resultBean;
     }
 
     //返回成功
-    public static ResultBean success(Object data,String failmsg){
+    public static ResultBean success(Object data,String Msg){
         ResultBean resultBean = new ResultBean();
         resultBean.setStatusCode(200);
         resultBean.setResult(true);
-        resultBean.setFailMsg(failmsg);
+        resultBean.setFailMsg(Msg);
         resultBean.setData(data);
         return resultBean;
     }
     //返回失败
-    public static ResultBean failure(String failmsg){
+    public static ResultBean failure(String Msg){
         ResultBean resultBean = new ResultBean();
         resultBean.setStatusCode(500);
         resultBean.setResult(false);
-        resultBean.setFailMsg(failmsg);
+        resultBean.setFailMsg(Msg);
+        return resultBean;
+    }
+
+    public static ResultBean result(boolean result ,String Msg){
+        ResultBean resultBean = new ResultBean();
+        resultBean.setResult(result);
+        resultBean.setFailMsg(Msg);
+        if (result){
+            resultBean.setStatusCode(200);
+        }else{
+            resultBean.setStatusCode(500);
+        }
         return resultBean;
     }
 

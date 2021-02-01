@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -50,21 +52,32 @@ public class PaperReviewServiceImpl extends ServiceImpl<PaperReviewMapper, Paper
     @Override
     public PaperReviewDetailDTO getPaperReviewDetail(Long id,String dataBase) {
         PaperReviewDetailDTO paperReviewDetailDTO = paperUploadRecordMapper.selectInfoById(id,dataBase);
+        if (!ObjectUtils.isEmpty(paperReviewDetailDTO)) {
+            //根据 user_id找出 所有的论文
+            QueryWrapper<PaperUploadRecord> selectWrapper = new QueryWrapper<>();
+            selectWrapper.eq("user_id", paperReviewDetailDTO.getUserId());
+            List<PaperUploadRecord> paperUploadRecords = paperUploadRecordMapper.selectList(selectWrapper);
+            List<Long> paperIds = new ArrayList<>();
+            if (paperUploadRecords.size() > 0) {
+                paperIds = paperUploadRecords.stream().map(PaperUploadRecord::getId).collect(Collectors.toList());
 
-        if (!ObjectUtils.isEmpty(paperReviewDetailDTO)){
-
-            //查询审核记录
-            QueryWrapper<PaperReview> wrapper = new QueryWrapper();
-            wrapper.eq("user_id",paperReviewDetailDTO.getUserId());
-            List<PaperReview> paperReviews = paperReviewMapper.selectList(wrapper);
-            paperReviewDetailDTO.setReviewList(paperReviews);
+            }
+            if (paperIds.size() > 0) {
+                //查询审核记录
+                QueryWrapper<PaperReview> wrapper = new QueryWrapper();
+                wrapper.in("paper_id", paperIds);
+                List<PaperReview> paperReviews = paperReviewMapper.selectList(wrapper);
+                paperReviewDetailDTO.setReviewList(paperReviews);
+            }
         }
         return paperReviewDetailDTO;
     }
 
     @Override
-    public List<PaperReviewExportDTO> exportPageReviewRecordList(String ids) {
+    public List<PaperReviewExportDTO> exportPageReviewRecordList(List<Long> ids) {
+        System.out.println("ids:" + ids);
         List<PaperReviewExportDTO> dto = paperReviewMapper.getPaperReviewList(ids);
+        System.out.println("ssssssssssss"+dto.size());
         return dto;
     }
 }

@@ -24,5 +24,5 @@ public interface PaperReviewMapper extends BaseMapper<PaperReview> {
 
       Page<PaperReviewPageDTO> queryPaperReviewPage(Page page, @Param("entity") PaperSettingPageSearchVo vo,@Param("dataBase") String dataBase) ;
 
-    List<PaperReviewExportDTO> getPaperReviewList(@Param("ids") String ids);
+    List<PaperReviewExportDTO> getPaperReviewList(@Param("idList") List<Long> ids);
 }

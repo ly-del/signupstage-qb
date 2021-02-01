@@ -1,13 +1,11 @@
 package com.cb.signupstage.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cb.signupstage.dto.PaperApplyDTO;
-import com.cb.signupstage.dto.PaperInterviewSettingExportDTO;
-import com.cb.signupstage.dto.PaperInterviewSettingPageDTO;
-import com.cb.signupstage.dto.PaperUploadPageDTO;
+import com.cb.signupstage.dto.*;
 import com.cb.signupstage.entity.PaperUploadRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cb.signupstage.vo.PaperInterviewSettingSearchVo;
+import com.cb.signupstage.vo.PaperReviewImportVo;
 import org.apache.poi.ss.formula.functions.T;
 
 import java.util.List;
@@ -38,4 +36,6 @@ public interface PaperUploadRecordService extends IService<PaperUploadRecord> {
      * @return
      */
     List<PaperApplyDTO> getSimpleApplyList();
+
+    List<PaperReviewImportErrorDTO> batchChangeRepeatStatus(List<PaperReviewImportVo> paperReviewList);
 }

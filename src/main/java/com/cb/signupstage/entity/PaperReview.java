@@ -50,9 +50,6 @@ public class PaperReview implements Serializable {
     @TableField("account_id")
     private Long accountId;
 
-    @TableField("user_id")
-    private Long userId;
-
     /**
      * 删除标识
      */
